@@ -1,0 +1,186 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a1a;
+    border-radius: 9px;
+    padding: 13px 25px;
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto 5px auto;
+    
+}
+
+/* Left section - Menu icon + text */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-icon {
+    color: white;
+    width: 20px;
+    height: 20px;
+}
+
+.menu-text {
+    color: white;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Center section - Brand */
+.nav-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.brand {
+    color: white;
+    font-size: 20px;
+    letter-spacing: 3px;
+    margin: 0;
+    font-weight: 900;
+    -webkit-text-stroke: 0.5px white;
+}
+
+/* Right section - Buttons */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Default: no animation on mouse leave (instant reset) */
+.btn span {
+    display: block;
+    transition: none;
+    transform-origin: center 120px; 
+    /* Fix for text blur/boldness during transform */
+    -webkit-font-smoothing: antialiased;
+    backface-visibility: hidden;
+    transform: translateZ(0); /* Hardware acceleration */
+}
+
+/* First span - visible and centered */
+.btn span:first-child {
+    position: relative;
+    transform: rotate(0deg);
+}
+
+/* Second span - hidden off-screen to the left (rotated) */
+.btn span:last-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(-25deg); 
+    opacity: 0;
+}
+
+/* On hover: smooth rotation transition */
+.btn:hover span {
+    /* Adjusted timing for better sync: 0.8s transform, 0.4s opacity */
+    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease;
+}
+
+/* Hover: first span rotates out to the right */
+.btn:hover span:first-child {
+    transform: rotate(25deg); 
+    opacity: 0;
+}
+
+/* Hover: second span rotates in to center */
+.btn:hover span:last-child {
+    transform: rotate(0deg);
+    opacity: 1;
+}
+.btn-login {
+    background: #2a2a2a;
+    color: white;
+}
+
+.btn-login:hover {
+    background: #3a3a3a;
+}
+
+.btn-join {
+    background:#a1ff62;
+    color: #1a1a1a;
+}
+
+.btn-join:hover {
+    background: #a1ff62;
+    
+}
+
+/* Make navbar always on top */
+.navbar {
+    position: relative;
+    z-index: 20;
+    transition: all 0.3s ease;
+}
+
+/* Marquee Banner */
+.marquee-banner {
+    width: 47vw;
+    border-radius: 5px;
+    background: #a1ff62;
+    overflow: hidden;
+    padding: 5px 0;
+    margin: 9px auto;
+    position: relative;
+    z-index: 10;
+    transition: transform 0.5s ease, margin-top 0.5s ease, opacity 0.5s ease;
+}
+
+/* Hide marquee behind navbar when scrolled */
+.marquee-banner.scrolled {
+    transform: translateY(-120%); /* Moves up completely behind menu */
+    margin-top: -30px; /* Pulls subsequent content up slightly */
+    opacity: 0;
+    z-index: -1; /* Ensures it stays behind everything */
+}
+
+.marquee-track {
+    display: flex;
+    gap: 20px;
+    animation: scroll 15s linear infinite;
+    white-space: nowrap;
+    
+}
+
+.marquee-track span {
+    font-size: 9px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
