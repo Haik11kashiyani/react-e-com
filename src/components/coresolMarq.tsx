@@ -4,39 +4,39 @@ function coresolMarq() {
   return (
     <div>
         <div>
-            <img src="" alt="" srcset="" />
+           <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>
-            <img src="" alt="" srcset="" />
+            <video src=""></video>
             <p></p>
         </div>
         <div>

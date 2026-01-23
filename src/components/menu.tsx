@@ -23,7 +23,7 @@ function MenuBar() {
     <nav className="navbar">
       <div className="nav-left">
         <Menu className="menu-icon" />
-        <span className="menu-text">Menu</span>
+      
       </div>
       
       <div className="nav-center">
@@ -45,12 +45,12 @@ function MenuBar() {
     {/* Marquee Banner - Under the menu */}
     <div className={`marquee-banner ${isScrolled ? 'scrolled' : ''}`}>
       <div className="marquee-track">
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
-        <span>EXPLORE THE OSMO SHOWCASE ✦</span>
+        <span>Explore Collection</span>
+        <span>Feel the silk against your skin</span>
+        <span>Effortless style</span>
+        <span>timeless quality</span>
+        <span>Sustainable fabrics</span>
+        <span>Wear your values</span>
       </div>
     </div>
     </>
