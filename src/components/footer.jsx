@@ -5,7 +5,7 @@ function Footer() {
   const [email, setEmail] = useState("");
   const [agreePolicy, setAgreePolicy] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = (e) => {
     e.preventDefault();
     if (agreePolicy) {
       console.log("Subscribed:", { firstName, email });
