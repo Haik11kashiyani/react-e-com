@@ -1,89 +1,106 @@
-import React from 'react'
 
 function CoresolMarq() {
   return (
     <div className="marquee-container">
-      <div className="marquee-track">
+      <div className="coresol-marquee-track">
         {/* Original Content */}
-        <div className="w-[200px] h-[130px]">
+        <div className="marquee-item">
             <a href="#">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
             </a>
-            <p className="text-base mt-2 font-medium">100% Organic Cotton</p>
+            <p>100% Organic Cotton</p>
         </div>
-        <div className="w-[200px] h-[130px]">
+        <div className="marquee-item">
              <a href="#">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
             </a>
-            <p className="text-base mt-2 font-medium">100% Organic Cotton</p>
+            <p>Premium Fabrics</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+            <p>Sustainable Living</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Eco-Friendly Choice</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Modern Design</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+             <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+              <p>Comfort First</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Ethical Fashion</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Natural Materials</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Timeless Style</p>
         </div>
-        <div className="max-w-[200px]">
-            <h4 className="text-lg font-semibold leading-tight">Osmo is an ever-growing platform with Webflow & HTML resources.</h4>
+        <div className="marquee-item">
+            <h4>Osmo is an ever-growing platform with Webflow & HTML resources.</h4>
+             <p>Platform Resources</p>
         </div>
-        <div className="text-lg font-bold whitespace-nowrap">
-            Join 1.7K+ others
+        <div className="marquee-item">
+           <p className='font-bold text-sm'>Join 1.7K+ others</p>
+           <p>Community</p>
         </div>
 
         {/* Duplicated Content for Seamless Loop */}
-        <div className="w-[200px] h-[130px]">
+        <div className="marquee-item">
             <a href="#">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
             </a>
-            <p className="text-base mt-2 font-medium">100% Organic Cotton</p>
+            <p>100% Organic Cotton</p>
         </div>
-        <div className="w-[200px] h-[130px]">
+        <div className="marquee-item">
              <a href="#">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
             </a>
-            <p className="text-base mt-2 font-medium">100% Organic Cotton</p>
+            <p>Premium Fabrics</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+            <p>Sustainable Living</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Eco-Friendly Choice</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Modern Design</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+             <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+              <p>Comfort First</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Ethical Fashion</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Natural Materials</p>
         </div>
-        <div className="w-[200px] h-[130px]">
-            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover rounded-md"></video>
+        <div className="marquee-item">
+            <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
+             <p>Timeless Style</p>
         </div>
-        <div className="max-w-[200px]">
-            <h4 className="text-lg font-semibold leading-tight">Osmo is an ever-growing platform with Webflow & HTML resources.</h4>
+        <div className="marquee-item">
+            <h4>Osmo is an ever-growing platform with Webflow & HTML resources.</h4>
+             <p>Platform Resources</p>
         </div>
-        <div className="text-lg font-bold whitespace-nowrap">
-            Join 1.7K+ others
+        <div className="marquee-item">
+           <p className='font-bold text-sm'>Join 1.7K+ others</p>
+           <p>Community</p>
         </div>
       </div>
     </div>

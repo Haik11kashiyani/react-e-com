@@ -4,22 +4,71 @@
 }
 
 /* Marquee Animation Styles */
+/* Marquee Animation Styles */
+/* Marquee Animation Styles */
 .marquee-container {
   overflow: hidden;
   white-space: nowrap;
   width: 100%;
   position: relative;
+  padding: 80px 0; /* Generous padding */
+  perspective: 1500px; /* Enable 3D space */
+  background: transparent;
 }
 
-.marquee-track {
+.coresol-marquee-track {
   display: flex;
-  gap: 12rem; /* Replaces gap-4 */
+  gap: 8rem; 
   align-items: center;
-  width: max-content; /* Ensure it doesn't wrap */
-  animation: marquee-left 6000s linear infinite;
+  width: max-content; 
+  animation: marquee-scroll-fix 100s linear infinite;
+  transform-style: preserve-3d;
+  /* The "Half Circle Form" / Curving Effect via 3D Rotation */
+  transform: rotateZ(-2deg) rotateX(10deg); 
+  transform-origin: center;
 }
 
-@keyframes marquee-left {
+.marquee-item {
+  width: 300px;
+  flex-shrink: 0;
+  background: #0a0a0a; /* Almost pure black */
+  padding: 8px 8px 20px 8px; /* Extra bottom padding for height */
+  border-radius: 6px;   /* Sharper radius */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;            /* Increased spacing after video */
+  transition: transform 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Deep shadow */
+}
+
+.marquee-item:hover {
+    transform: translateY(-5px);
+}
+
+.marquee-item video, 
+.marquee-item img {
+  width: 100%;
+  height: 160px; /* Kept same as requested */
+  object-fit: cover;
+  border-radius: 4px; /* Sharp inner radius */
+  display: block;
+}
+
+.marquee-item p,
+.marquee-item h4 {
+  color: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px; /* Slightly bigger font */
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+  padding-left: 4px;
+  margin-bottom: 4px;
+  white-space: normal;
+  opacity: 0.95;
+}
+
+@keyframes marquee-scroll-fix {
   0% {
     transform: translateX(0);
   }
