@@ -5,7 +5,10 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    position: relative; /* Ensure stacking context */
+    z-index: 10;        /* Keep below Marquee (z-100) */
     
+    margin-bottom: 25px; /* Using margin instead of padding as requested */
     color: white;
     font-family: 'Inter', sans-serif;
 }
