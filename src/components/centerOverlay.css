@@ -1,0 +1,106 @@
+
+/* Centered Content Overlay for Marquee */
+.center-content {
+    position: absolute;
+    top: 72%; /* Slightly up from previous 78% */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 1200px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.hero-text {
+    text-align: center;
+    margin-bottom: 20px;
+    pointer-events: auto;
+}
+
+.hero-text p {
+    font-size: clamp(18px, 2.5vw, 32px); /* Slightly smaller text */
+    line-height: 1.15;
+    font-weight: 500;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+    margin: 0;
+    max-width: 800px; 
+}
+
+.play-reel-container {
+    position: relative;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Reduced gap */
+    margin-top: 15px; /* Reduced margin (moved up closer to text) */
+}
+
+.flanking-text {
+    font-size: clamp(30px, 5vw, 60px); /* Smaller flanking text */
+    font-weight: 400;
+    color: #e6e6e6; 
+    text-transform: capitalize;
+    line-height: 1;
+    user-select: none;
+}
+
+.video-preview {
+    width: 180px; /* Smaller video */
+    height: 110px; /* Smaller video */
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.video-preview:hover {
+    transform: scale(1.02);
+}
+
+.video-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1; 
+}
+
+.video-overlay-content {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    padding: 0 10px; /* Smaller padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
+
+.brand-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px; /* Smaller font */
+    font-weight: 500;
+}
+
+.brand-dot {
+    opacity: 0.6;
+    font-size: 9px;
+}
+
+.video-time {
+    font-size: 10px; /* Smaller font */
+    font-weight: 500;
+}
