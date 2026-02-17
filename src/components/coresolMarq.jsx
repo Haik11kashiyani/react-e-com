@@ -30,6 +30,13 @@ function CoresolMarq() {
 
   return (
     <div className="marquee-container">
+      <div className="center-content">
+        <div className="hero-text">
+          <p className="update-label">Latest updates</p>
+          <p className="update-source">from Osmo</p>
+        </div>
+      </div>
+
       <div className="coresol-marquee-track">
         {items.map((item, index) => (
           <div className="marquee-item" key={index} style={{ '--i': index, '--total': items.length }}>
@@ -46,34 +53,6 @@ function CoresolMarq() {
               {item.text && <p>{item.text}</p>}
           </div>
         ))}
-      </div>
-      
-      <div className="center-content">
-        <div className="hero-text">
-          <p>
-            Osmo is an ever-growing platform with<br />
-            Webflow & HTML resources. Get exclusive<br />
-            access to the elements, techniques and<br />
-            code behind award-winning work.
-          </p>
-        </div>
-        
-        <div className="play-reel-container">
-            <span className="flanking-text">Play</span>
-            
-            <div className="video-preview">
-                <video src="/assets/videos/1.mp4" autoPlay loop muted playsInline></video>
-                 <div className="video-overlay-content">
-                    <div className="brand-pill">
-                        <span>Osmo in use</span>
-                        <span className="brand-dot">Osmo *</span>
-                    </div>
-                    <div className="video-time">00:48</div>
-                 </div>
-            </div>
-            
-            <span className="flanking-text">Reel</span>
-        </div>
       </div>
     </div>
   )

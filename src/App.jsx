@@ -3,13 +3,21 @@ import HeroSec from './components/heroSec'
 import Menu from './components/menu'
 import Footer from './components/footer'
 import CoresolMarq from './components/coresolMarq'
+import ReviweUser from './reviwe-user'
+import BrandFeatures from './components/BrandFeatures'
+import ProductCompare from './components/ProductCompare'
+import FeaturedProducts from './components/FeaturedProducts'
 function App() {
   return (
     <div>
-      {/* <Footer/> */}
       <Menu/>
       <HeroSec/>
       <CoresolMarq/>
+      <FeaturedProducts/>
+      <ProductCompare/>
+      <BrandFeatures/>
+      <ReviweUser/>
+      <Footer/> 
     </div>
   )
 }

@@ -1,0 +1,326 @@
+:root {
+    /* User Provided Variables */
+    --color-purple: #6840ff;
+    --color-coral: #f84131;
+    --color-electric: #a1ff62;
+    --color-neutral-800: #201D1D;
+    --cubic-default: cubic-bezier(0.625, 0.05, 0, 1);
+    --duration-default: 0.6s;
+    --size-unit: 16;
+    --size-container-ideal: 1440;
+    --size-container-min: 992px;
+    --size-container-max: 1920px;
+    --size-container: clamp(var(--size-container-min), 100vw, var(--size-container-max));
+    --size-font: calc(var(--size-container) / (var(--size-container-ideal) / var(--size-unit)));
+}
+
+/* Base reset/styles for this section */
+.intro__large-col {
+    position: relative;
+    width: 100%;
+    /* Use a fixed height or aspect ratio if needed, but the user snippet suggests fitting content or specific layout */
+    height: 900px; 
+    background-color: #1a1a1a;
+    border-radius: 40px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Arial', sans-serif; /* Haffer VF fallback */
+    font-size: var(--size-font);
+    color: white;
+}
+
+/* Micrographic image at bottom left */
+.intro-col__micro {
+    position: absolute;
+    bottom: 2em;
+    left: 2em;
+    z-index: 10;
+    width: 3em; 
+}
+.intro-col__micro img {
+    width: 100%;
+    height: auto;
+}
+
+/* Slider Container */
+.latest-resources-slider {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    perspective: 2000px; /* Deep perspective for 3D effect */
+}
+
+/* Text Overlay */
+.latest-resources-slider__card-text {
+    position: absolute;
+    top: 3em;
+    text-align: center;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.latest-resources-slider__card-text p {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.p-m {
+    font-size: 1.5em;
+    font-weight: 460;
+}
+
+.u--fw-460 {
+    font-weight: 460;
+}
+
+.u--color-electric {
+    color: var(--color-electric);
+}
+
+.scribble {
+    font-family: 'Caveat', cursive, serif; /* Fallback for handwritten font */
+    color: var(--color-electric);
+    transform: rotate(-5deg);
+    margin-top: 0.5em !important;
+    font-size: 1.1em;
+}
+
+/* Collection & List */
+.vertical-slider__collection {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vertical-slider__list {
+    position: relative;
+    width: 50em; /* Adjust based on card size requirements */
+    height: 30em; /* Adjust based on card size */
+    transform-style: preserve-3d;
+}
+
+/* Individual Items (Slides) */
+.vertical-slider__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    will-change: transform, opacity;
+    transition: transform var(--duration-default) var(--cubic-default), opacity var(--duration-default) var(--cubic-default);
+}
+
+/* Resource Card Styling */
+.resource-card {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-electric);
+    border-radius: 1em;
+    overflow: hidden;
+    position: relative;
+    /* Create the green/blue split layout */
+}
+
+.resource-card__inner {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.resource-card__start {
+    width: 40%;
+    padding: 2.5em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--color-electric);
+    color: #1a1a1a;
+    z-index: 2;
+}
+
+.button-row {
+    display: flex;
+    gap: 0.6em;
+    flex-wrap: wrap;
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.4em 0.8em;
+    background: #1a1a1a;
+    border-radius: 0.25em;
+    color: var(--color-electric);
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tag[data-shape="round"] {
+    border-radius: 2em;
+}
+
+.button-bg {
+    width: 0.5em;
+    height: 0.5em;
+    background-color: var(--color-electric);
+    border-radius: 50%;
+}
+
+.resource-card__start-h h4 {
+    font-size: 2.5em;
+    line-height: 1;
+    margin: 0;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+}
+
+.resource-card__category {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: auto;
+}
+
+.resource-card__end {
+    width: 60%;
+    position: relative;
+}
+
+.resource-visual {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cover-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Show video on hover of the active card */
+.vertical-slider__item[data-slide-active="true"]:hover .cover-video {
+    opacity: 1;
+}
+
+/* Fades top/bottom */
+.latest-resources-slider__fade {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.latest-resources-slider__fade:not(.is--flipped) {
+    top: 0;
+    background: linear-gradient(to bottom, #1a1a1a 10%, transparent);
+}
+
+.latest-resources-slider__fade.is--flipped {
+    bottom: 0;
+    background: linear-gradient(to top, #1a1a1a 10%, transparent);
+}
+
+/* Navigation Controls */
+.vertical-slider__buttons {
+    position: absolute;
+    right: 3em;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    z-index: 20;
+}
+
+.vertical-slider__button {
+    width: 3em;
+    height: 3em;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vertical-slider__button:hover {
+    background: var(--color-electric);
+    color: #1a1a1a;
+    border-color: var(--color-electric);
+}
+
+.vertical-slider__bullets {
+    position: absolute;
+    right: 8em; /* To the left of buttons */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    align-items: flex-end;
+}
+
+.vertical-slider__bullet-item {
+    height: 2px;
+    width: 1em;
+    background: rgba(255,255,255,0.2);
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.vertical-slider__bullet-item[aria-current="true"] {
+    width: 2em;
+    background: var(--color-electric);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .intro__large-col {
+        height: 600px;
+        font-size: calc(var(--size-font) * 0.8);
+    }
+    .vertical-slider__list {
+        width: 90%;
+        height: 60%;
+    }
+    .resource-card__start {
+        padding: 1.5em;
+    }
+    .resource-card__start-h h4 {
+        font-size: 2em;
+    }
+    .vertical-slider__buttons {
+        right: 1em;
+    }
+    .vertical-slider__bullets {
+        display: none;
+    }
+}

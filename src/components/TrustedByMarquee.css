@@ -1,0 +1,129 @@
+
+.trustedby-wrap {
+    width: 100%;
+    margin-top: 60px;
+    padding: 20px 0;
+    overflow: hidden;
+}
+
+.tag-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    white-space: nowrap;
+    margin-bottom: 40px;
+}
+
+.tag-row__line {
+    height: 1px;
+    background-color: #e5e5e5;
+    flex-grow: 1;
+    max-width: 200px;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+}
+
+.tag {
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag[data-shape="round"] {
+    border-radius: 50px;
+}
+
+.button-bg {
+    width: 8px;
+    height: 8px;
+    background-color: #1a1a1a;
+    border-radius: 50%;
+}
+
+.eyebrow {
+    letter-spacing: 0.05em;
+    color: #1a1a1a;
+}
+
+.trustedby-row {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.trustedby-marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    gap: 60px;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.trustedby-marquee__collection {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    animation: scroll 30s linear infinite;
+}
+
+/* Pause animation on hover */
+.trustedby-marquee:hover .trustedby-marquee__collection {
+    animation-play-state: paused !important;
+}
+
+.trustedby-marquee__item {
+    width: 120px; /* Fixed width for consistency */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trustedby-marquee__item-svg {
+    width: 100%;
+    height: auto;
+    color: #666; /* Default color */
+    transition: color 0.3s ease;
+}
+
+.trustedby-marquee__item:hover .trustedby-marquee__item-svg {
+    color: #000; /* Darker on hover */
+}
+
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .trustedby-marquee__collection {
+        gap: 40px;
+        animation-duration: 20s;
+    }
+    
+    .trustedby-marquee__item {
+        width: 100px;
+    }
+    
+    .tag-row__line {
+        display: none;
+    }
+}

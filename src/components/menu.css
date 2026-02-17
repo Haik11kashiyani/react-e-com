@@ -163,9 +163,10 @@
 .marquee-track {
     display: flex;
     gap: 20px;
-    animation: scroll 15s linear infinite;
+    animation: scroll 90s linear infinite;
     white-space: nowrap;
-    
+    width: max-content;
+    flex-shrink: 0;
 }
 
 .marquee-track span {
@@ -174,6 +175,7 @@
     color: #1a1a1a;
     text-transform: uppercase;
     letter-spacing: 1px;
+    flex-shrink: 0;
 }
 
 @keyframes scroll {

@@ -1,18 +1,16 @@
 
 /* Centered Content Overlay for Marquee */
 .center-content {
-    position: absolute;
-    top: 72%; /* Slightly up from previous 78% */
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     width: 100%;
     max-width: 1200px;
+    margin: 0 auto;
     z-index: 200;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    padding: 40px 0 20px;
 }
 
 .hero-text {
@@ -21,86 +19,129 @@
     pointer-events: auto;
 }
 
-.hero-text p {
-    font-size: clamp(18px, 2.5vw, 32px); /* Slightly smaller text */
-    line-height: 1.15;
+.update-label {
+    font-size: 24px;
     font-weight: 500;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
+    color: #a3ff4d; /* Green color from screenshot */
     margin: 0;
-    max-width: 800px; 
+    line-height: 1.2;
 }
 
-.play-reel-container {
-    position: relative;
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px; /* Reduced gap */
-    margin-top: 15px; /* Reduced margin (moved up closer to text) */
-}
-
-.flanking-text {
-    font-size: clamp(30px, 5vw, 60px); /* Smaller flanking text */
+.update-source {
+    font-size: 24px;
     font-weight: 400;
     color: #e6e6e6; 
-    text-transform: capitalize;
-    line-height: 1;
-    user-select: none;
+    margin: 0;
+    line-height: 1.2;
 }
 
-.video-preview {
-    width: 180px; /* Smaller video */
-    height: 110px; /* Smaller video */
-    background: #000;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-}
-
-.video-preview:hover {
-    transform: scale(1.02);
-}
-
-.video-preview video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 1; 
-}
-
-.video-overlay-content {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 100%;
-    padding: 0 10px; /* Smaller padding */
+.new-resource-card {
+    background-color: #a3ff4d; /* Bright green */
+    border-radius: 12px;
+    padding: 30px;
+    width: 600px;
+    height: 250px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    color: white;
-    font-family: 'Inter', sans-serif;
+    pointer-events: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    color: #1a1a1a;
+    position: relative;
+    overflow: hidden;
 }
 
-.brand-pill {
+.new-resource-card::before {
+    /* Optional: Green border ring if needed, but card looks solid green */
+}
+
+.card-left {
     display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px; /* Smaller font */
-    font-weight: 500;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 55%;
+    z-index: 2;
 }
 
-.brand-dot {
-    opacity: 0.6;
-    font-size: 9px;
+.badges {
+    display: flex;
+    gap: 8px;
 }
 
-.video-time {
-    font-size: 10px; /* Smaller font */
+.badge-black {
+    background: #1a1a1a;
+    color: #a3ff4d;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-title {
+    font-size: 32px;
+    font-weight: 500; /* Medium */
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.card-category {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.card-right {
+    width: 45%;
+    position: relative;
+}
+
+.grid-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #0044cc; /* Blue from screenshot */
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 15px;
+    color: white;
+    /* Simulate image */
+    background-image: linear-gradient(135deg, #0055ff 0%, #003399 100%);
+}
+
+.grid-image-placeholder span {
+    font-size: 24px;
     font-weight: 500;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.grid-image-placeholder small {
+    font-size: 10px;
+    line-height: 1.3;
+    opacity: 0.9;
+    max-width: 120px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .new-resource-card {
+        width: 90%;
+        height: auto;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .card-left, .card-right {
+        width: 100%;
+    }
+    
+    .grid-image-placeholder {
+        height: 150px;
+    }
 }

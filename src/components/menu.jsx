@@ -48,9 +48,31 @@ function MenuBar() {
         <span>Explore Collection</span>
         <span>Feel the silk against your skin</span>
         <span>Effortless style</span>
-        <span>timeless quality</span>
+        <span>Timeless quality</span>
         <span>Sustainable fabrics</span>
         <span>Wear your values</span>
+        <span>Inst your skin</span>
+        <span>Explore Collection</span>
+        <span>Feel the silk against your skin</span>
+        <span>Effortless style</span>
+        <span>Timeless quality</span>
+        <span>Sustainable fabrics</span>
+        <span>Wear your values</span>
+        <span>Inst your skin</span>
+        <span>Explore Collection</span>
+        <span>Feel the silk against your skin</span>
+        <span>Effortless style</span>
+        <span>Timeless quality</span>
+        <span>Sustainable fabrics</span>
+        <span>Wear your values</span>
+        <span>Inst your skin</span>
+        <span>Explore Collection</span>
+        <span>Feel the silk against your skin</span>
+        <span>Effortless style</span>
+        <span>Timeless quality</span>
+        <span>Sustainable fabrics</span>
+        <span>Wear your values</span>
+        <span>Inst your skin</span>
       </div>
     </div>
     </>
