@@ -1,6 +1,6 @@
 
 
-import './centerOverlay.css';
+
 
 function CoresolMarq() {
   const items = [
@@ -30,12 +30,7 @@ function CoresolMarq() {
 
   return (
     <div className="marquee-container">
-      <div className="center-content">
-        <div className="hero-text">
-          <p className="update-label">Latest updates</p>
-          <p className="update-source">from Osmo</p>
-        </div>
-      </div>
+      {/* Header removed for cleaner UI */}
 
       <div className="coresol-marquee-track">
         {items.map((item, index) => (

@@ -257,7 +257,7 @@ function ProductCompare() {
         </div>
       </div>
 
-      <p className="compare-auto-label">Auto-cycling · {data.category}</p>
+    
     </section>
   );
 }
