@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowRight } from 'lucide-react';
 import './FeaturedProducts.css';
 
 const allProducts = [
@@ -168,7 +169,7 @@ function FeaturedProducts() {
               />
             ))}
           </div>
-          <button className="featured-view-all">View All →</button>
+          <button className="featured-view-all">View All <ArrowRight size={14} /></button>
         </div>
       </div>
 

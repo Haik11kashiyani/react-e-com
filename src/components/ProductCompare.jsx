@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Award } from 'lucide-react';
 import './ProductCompare.css';
 
 const comparisons = [
@@ -203,7 +204,7 @@ function ProductCompare() {
       <div className={`compare-card ${isTransitioning ? 'fading' : ''}`}>
         {/* Product A */}
         <div className="compare-side">
-          {data.products[0].winner && <span className="best-pick">★ Best Pick</span>}
+          {data.products[0].winner && <span className="best-pick"><Award size={13} /> Best Pick</span>}
           <div className="compare-img-wrap">
             <img src={data.products[0].image} alt={data.products[0].name} />
           </div>
@@ -234,7 +235,7 @@ function ProductCompare() {
 
         {/* Product B */}
         <div className="compare-side">
-          {data.products[1].winner && <span className="best-pick">★ Best Pick</span>}
+          {data.products[1].winner && <span className="best-pick"><Award size={13} /> Best Pick</span>}
           <div className="compare-img-wrap">
             <img src={data.products[1].image} alt={data.products[1].name} />
           </div>
