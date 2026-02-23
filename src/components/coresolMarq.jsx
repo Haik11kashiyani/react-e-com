@@ -4,28 +4,26 @@
 
 function CoresolMarq() {
   const items = [
-    { video: "/assets/videos/1.mp4", text: "100% Organic Cotton", link: "#" },
-    { video: "/assets/videos/3.mp4", text: "Premium Fabrics", link: "#" },
-    { video: "/assets/videos/4.mp4", text: "Sustainable Living" },
-    { video: "/assets/videos/5.mp4", text: "Eco-Friendly Choice" },
-    { video: "/assets/videos/1.mp4", text: "Modern Design" },
-    { video: "/assets/videos/3.mp4", text: "Comfort First" },
-    { video: "/assets/videos/4.mp4", text: "Ethical Fashion" },
-    { video: "/assets/videos/5.mp4", text: "Natural Materials" },
-    { video: "/assets/videos/1.mp4", text: "Timeless Style" },
-    
+    { video: "/assets/videos/1.mp4", text: "Next-Gen Smartphones", link: "#" },
+    { video: "/assets/videos/3.mp4", text: "Premium Audio", link: "#" },
+    { video: "/assets/videos/4.mp4", text: "Smart Wearables" },
+    { video: "/assets/videos/5.mp4", text: "Ultra-Thin Laptops" },
+    { video: "/assets/videos/1.mp4", text: "4K Displays" },
+    { video: "/assets/videos/3.mp4", text: "Wireless Freedom" },
+    { video: "/assets/videos/4.mp4", text: "AI-Powered Tech" },
+    { video: "/assets/videos/5.mp4", text: "Gaming Essentials" },
+    { video: "/assets/videos/1.mp4", text: "Future of VR" },
 
-    /* Duplicates */
-    { video: "/assets/videos/1.mp4", text: "100% Organic Cotton", link: "#" },
-    { video: "/assets/videos/3.mp4", text: "Premium Fabrics", link: "#" },
-    { video: "/assets/videos/4.mp4", text: "Sustainable Living" },
-    { video: "/assets/videos/5.mp4", text: "Eco-Friendly Choice" },
-    { video: "/assets/videos/1.mp4", text: "Modern Design" },
-    { video: "/assets/videos/3.mp4", text: "Comfort First" },
-    { video: "/assets/videos/4.mp4", text: "Ethical Fashion" },
-    { video: "/assets/videos/5.mp4", text: "Natural Materials" },
-    { video: "/assets/videos/1.mp4", text: "Timeless Style" },
-   
+    /* Duplicates for seamless loop */
+    { video: "/assets/videos/1.mp4", text: "Next-Gen Smartphones", link: "#" },
+    { video: "/assets/videos/3.mp4", text: "Premium Audio", link: "#" },
+    { video: "/assets/videos/4.mp4", text: "Smart Wearables" },
+    { video: "/assets/videos/5.mp4", text: "Ultra-Thin Laptops" },
+    { video: "/assets/videos/1.mp4", text: "4K Displays" },
+    { video: "/assets/videos/3.mp4", text: "Wireless Freedom" },
+    { video: "/assets/videos/4.mp4", text: "AI-Powered Tech" },
+    { video: "/assets/videos/5.mp4", text: "Gaming Essentials" },
+    { video: "/assets/videos/1.mp4", text: "Future of VR" },
   ];
 
   return (

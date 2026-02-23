@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion.div in JSX
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, Star, ArrowLeft } from 'lucide-react';
@@ -9,24 +9,15 @@ import { staggerItem } from '../components/common/animationVariants';
 import './Wishlist.css';
 
 export default function Wishlist() {
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('vw_wishlist')) || [];
-    } catch { return []; }
-  });
-  const { addToCart } = useCart();
-
-  useEffect(() => {
-    localStorage.setItem('vw_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+  const { addToCart, wishlist, toggleWishlist } = useCart();
 
   const wishItems = allProducts.filter((p) => wishlist.includes(p.id));
-
-  const removeItem = (id) => setWishlist((prev) => prev.filter((x) => x !== id));
 
   const handleAddToCart = (product) => {
     addToCart(product);
   };
+
+  const removeItem = (id) => toggleWishlist(id);
 
   return (
     <div className="wishlist-page">

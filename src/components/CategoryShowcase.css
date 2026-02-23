@@ -1,0 +1,171 @@
+/* ========================================================
+   CATEGORY SHOWCASE — Premium Cards
+   ======================================================== */
+.cs-section {
+  padding: 80px 0 100px;
+  background: #fff;
+}
+
+.cs-section--compact {
+  padding: 60px 0 20px;
+}
+
+.cs-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 5%;
+}
+
+.cs-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.cs-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(14, 14, 14, 0.4);
+  margin-bottom: 12px;
+}
+
+.cs-title {
+  font-family: var(--vw-font-heading, 'Amarna'), sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--vw-dark, #0e0e0e);
+  margin: 0;
+}
+
+/* Grid */
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+/* Card */
+.cs-card {
+  position: relative;
+  display: block;
+  border-radius: 20px;
+  overflow: hidden;
+  text-decoration: none;
+  aspect-ratio: 3 / 4;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.cs-card:hover { transform: translateY(-6px); }
+
+.cs-card__img {
+  position: absolute;
+  inset: 0;
+}
+
+.cs-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.cs-card:hover .cs-card__img img { transform: scale(1.08); }
+
+.cs-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
+  transition: background 0.4s ease;
+}
+
+.cs-card:hover .cs-card__overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+}
+
+/* Content */
+.cs-card__content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  z-index: 2;
+}
+
+.cs-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--cat-color, #a1ff62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #0a0a0a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.cs-card:hover .cs-card__icon { transform: scale(1.1); }
+
+.cs-card__text { flex: 1; }
+
+.cs-card__text h3 {
+  font-family: var(--vw-font-heading, 'Amarna'), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 2px;
+  letter-spacing: -0.2px;
+}
+
+.cs-card__text span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+}
+
+.cs-card__arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  transform: translate(0, 0);
+}
+
+.cs-card:hover .cs-card__arrow {
+  background: #fff;
+  color: #0a0a0a;
+  transform: translate(2px, -2px);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .cs-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .cs-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .cs-section { padding: 60px 0 70px; }
+  .cs-card { aspect-ratio: 3 / 4; }
+}
+
+@media (max-width: 480px) {
+  .cs-grid { grid-template-columns: 1fr 1fr; }
+  .cs-card__content { padding: 14px; gap: 8px; }
+  .cs-card__icon { width: 36px; height: 36px; border-radius: 10px; }
+  .cs-card__text h3 { font-size: 0.95rem; }
+}

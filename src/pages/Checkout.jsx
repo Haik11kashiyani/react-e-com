@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div
 import { Link } from 'react-router-dom';
 import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
@@ -10,7 +10,7 @@ import './Checkout.css';
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
 export default function Checkout() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, totalPrice, clearCart, appliedCoupon, discount } = useCart();
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -22,9 +22,10 @@ export default function Checkout() {
     cardName: '', cardNumber: '', expiry: '', cvv: '',
   });
 
-  const shippingCost = totalPrice > 99 ? 0 : 9.99;
-  const tax = totalPrice * 0.08;
-  const grandTotal = totalPrice + shippingCost + tax;
+  const discountedTotal = totalPrice - discount;
+  const shippingCost = discountedTotal > 99 ? 0 : 9.99;
+  const tax = discountedTotal * 0.08;
+  const grandTotal = discountedTotal + shippingCost + tax;
 
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
@@ -278,6 +279,11 @@ export default function Checkout() {
                 </div>
                 <div className="checkout-summary__rows">
                   <div className="checkout-summary__row"><span>Subtotal</span><span>${totalPrice.toFixed(2)}</span></div>
+                  {discount > 0 && (
+                    <div className="checkout-summary__row" style={{ color: '#22a06b' }}>
+                      <span>Discount ({appliedCoupon})</span><span>-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="checkout-summary__row"><span>Shipping</span><span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span></div>
                   <div className="checkout-summary__row"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
                 </div>

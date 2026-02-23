@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './menu.css'
-import { Menu as MenuIcon, X, ShoppingCart, Heart } from 'lucide-react'
+import { Menu as MenuIcon, X, ShoppingCart, Heart, Sun, Moon, User } from 'lucide-react'
 import { useCart } from '../hooks/useCart'
+import { useTheme } from '../hooks/useTheme'
 
 function MenuBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { totalItems } = useCart()
+  const { dark, toggle } = useTheme()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -57,18 +59,9 @@ function MenuBar() {
           </div>
           
           <div className="nav-right">
-            <Link to="/wishlist" className="nav-icon-link" onClick={() => setIsMenuOpen(false)}>
-              <Heart size={18} />
-            </Link>
             <Link to="/cart" className="nav-icon-link cart-icon-link" onClick={() => setIsMenuOpen(false)}>
               <ShoppingCart size={18} />
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
-            </Link>
-            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                <button className="btn btn-login">
-                <span>Login</span>
-                <span>Login</span>
-                </button>
             </Link>
             <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
                 <button className="btn btn-join">
@@ -97,8 +90,8 @@ function MenuBar() {
                 <ul className="menu-links">
                     <li><Link to="/about" onClick={() => setIsMenuOpen(false)}>About Us</Link></li>
                     <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
-                    <li><Link to="/cart" onClick={() => setIsMenuOpen(false)}>Cart {totalItems > 0 && <span className="count">{totalItems}</span>}</Link></li>
                     <li><Link to="/wishlist" onClick={() => setIsMenuOpen(false)}>Wishlist</Link></li>
+                    <li><Link to="/profile" onClick={() => setIsMenuOpen(false)}>My Profile</Link></li>
                 </ul>
                 <div className="menu-socials">
                     <a href="#">in</a>
@@ -107,52 +100,20 @@ function MenuBar() {
                 </div>
             </div>
 
-            <div className="menu-column featured-column">
-                <div className="featured-card">
-                    <span className="available-badge">AVAILABLE <span>TODAY</span></span>
-                    <h3>Page Transition Course</h3>
-                    <div className="card-image-placeholder">
-                        <div className="stack-preview"></div>
-                    </div>
-                    <button className="btn-more-info">More info</button>
-                </div>
+            <div className="menu-column">
+                <span className="menu-label">ACCOUNT</span>
+                <ul className="menu-links menu-links--sm">
+                    <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link></li>
+                    <li><Link to="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link></li>
+                </ul>
+                <button className="menu-theme-toggle" onClick={toggle}>
+                  {dark ? <Sun size={16} /> : <Moon size={16} />}
+                  <span>{dark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
             </div>
       </div>
     </nav>
 
-    {/* Marquee Banner */}
-    <div className={`marquee-banner ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="marquee-track">
-        <span>Explore Collection</span>
-        <span>Feel the silk against your skin</span>
-        <span>Effortless style</span>
-        <span>Timeless quality</span>
-        <span>Sustainable fabrics</span>
-        <span>Wear your values</span>
-        <span>Inst your skin</span>
-        <span>Explore Collection</span>
-        <span>Feel the silk against your skin</span>
-        <span>Effortless style</span>
-        <span>Timeless quality</span>
-        <span>Sustainable fabrics</span>
-        <span>Wear your values</span>
-        <span>Inst your skin</span>
-        <span>Explore Collection</span>
-        <span>Feel the silk against your skin</span>
-        <span>Effortless style</span>
-        <span>Timeless quality</span>
-        <span>Sustainable fabrics</span>
-        <span>Wear your values</span>
-        <span>Inst your skin</span>
-        <span>Explore Collection</span>
-        <span>Feel the silk against your skin</span>
-        <span>Effortless style</span>
-        <span>Timeless quality</span>
-        <span>Sustainable fabrics</span>
-        <span>Wear your values</span>
-        <span>Inst your skin</span>
-      </div>
-    </div>
     </>
   )
 }

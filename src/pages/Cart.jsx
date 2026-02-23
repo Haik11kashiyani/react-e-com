@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, ShieldCheck, Truck, CreditCard } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, ShieldCheck, Truck, CreditCard, Tag, X } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { SplitText, FadeIn } from '../components/common/AnimatedComponents';
 import './Cart.css';
 
 export default function Cart() {
-  const { cart, removeFromCart, updateQty, totalItems, totalPrice, clearCart } = useCart();
+  const { cart, removeFromCart, updateQty, totalItems, totalPrice, clearCart, appliedCoupon, couponError, applyCoupon, removeCoupon, discount } = useCart();
+  const [couponInput, setCouponInput] = useState('');
 
   const shipping = totalPrice > 99 ? 0 : 9.99;
-  const tax = totalPrice * 0.08;
-  const grandTotal = totalPrice + shipping + tax;
+  const tax = (totalPrice - discount) * 0.08;
+  const grandTotal = totalPrice - discount + shipping + tax;
 
   return (
     <div className="cart-page">
@@ -121,6 +122,12 @@ export default function Cart() {
                     <span>Subtotal ({totalItems} items)</span>
                     <span>${totalPrice.toFixed(2)}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="cart-summary__row cart-summary__discount">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="cart-summary__row">
                     <span>Shipping</span>
                     <span>{shipping === 0 ? <b className="free-ship">FREE</b> : `$${shipping.toFixed(2)}`}</span>
@@ -129,6 +136,32 @@ export default function Cart() {
                     <span>Tax (8%)</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
+                </div>
+
+                {/* Coupon Code Input */}
+                <div className="cart-coupon">
+                  {appliedCoupon ? (
+                    <div className="cart-coupon__applied">
+                      <Tag size={14} />
+                      <span>{appliedCoupon.label}</span>
+                      <button onClick={removeCoupon} className="cart-coupon__remove"><X size={14} /></button>
+                    </div>
+                  ) : (
+                    <div className="cart-coupon__form">
+                      <div className="cart-coupon__input-wrap">
+                        <Tag size={14} />
+                        <input
+                          type="text"
+                          placeholder="Coupon code"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && applyCoupon(couponInput)}
+                        />
+                      </div>
+                      <button onClick={() => applyCoupon(couponInput)} className="cart-coupon__btn">Apply</button>
+                    </div>
+                  )}
+                  {couponError && <p className="cart-coupon__error">{couponError}</p>}
                 </div>
 
                 <div className="cart-summary__total">

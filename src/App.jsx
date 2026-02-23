@@ -8,11 +8,14 @@ import Footer from './components/footer'
 import ScrollToTop from './components/common/ScrollToTop'
 import PageTransition from './components/layout/PageTransition'
 import CartProvider from './hooks/CartProvider'
+import ThemeProvider from './hooks/ThemeProvider'
 
 // Home components
 import HeroSec from './components/heroSec'
 import CoresolMarq from './components/coresolMarq'
-import ProductCompare from './components/ProductCompare'
+import CategoryShowcase from './components/CategoryShowcase'
+import FeaturedProducts from './components/FeaturedProducts'
+import Testimonials from './components/Testimonials'
 import BrandFeatures from './components/BrandFeatures'
 
 // Pages
@@ -25,6 +28,7 @@ import Contact from './pages/Contact'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Wishlist from './pages/Wishlist'
+import Profile from './pages/Profile'
 
 // Styles
 import './styles/animations.css'
@@ -34,6 +38,7 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   return (
+    <ThemeProvider>
     <CartProvider>
       <ScrollToTop />
       <div>
@@ -43,8 +48,10 @@ function App() {
             <Route path="/" element={
               <PageTransition>
                 <HeroSec />
+                <CategoryShowcase />
                 <CoresolMarq />
-                <ProductCompare />
+                <FeaturedProducts />
+                <Testimonials />
                 <BrandFeatures />
               </PageTransition>
             } />
@@ -55,6 +62,7 @@ function App() {
             <Route path="/cart" element={<PageTransition><Cart /></PageTransition>} />
             <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
             <Route path="/wishlist" element={<PageTransition><Wishlist /></PageTransition>} />
+            <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
             <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
             <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
           </Routes>
@@ -62,6 +70,7 @@ function App() {
         {!isAuthPage && <Footer />}
       </div>
     </CartProvider>
+    </ThemeProvider>
   )
 }
 

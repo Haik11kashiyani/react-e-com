@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div/img
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ChevronLeft, Minus, Plus, ArrowUpRight, Sparkles, CheckCircle } from 'lucide-react';
 import { getProductById, getRelatedProducts } from '../data/products';
 import { useCart } from '../hooks/useCart';
@@ -10,7 +10,7 @@ import './ProductDetail.css';
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, toggleWishlist, isInWishlist } = useCart();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -144,8 +144,11 @@ export default function ProductDetail() {
               <button className="pd-atc pill-btn pill-btn-primary" onClick={() => addToCart(product, qty)}>
                 <ShoppingCart size={18} /> Add to Cart
               </button>
-              <button className="pd-wish-btn">
-                <Heart size={20} />
+              <button
+                className={`pd-wish-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                onClick={() => toggleWishlist(product.id)}
+              >
+                <Heart size={20} fill={isInWishlist(product.id) ? '#ff4d4d' : 'none'} />
               </button>
             </div>
           </FadeIn>
