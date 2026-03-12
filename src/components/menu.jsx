@@ -55,7 +55,7 @@ function MenuBar() {
           </div>
           
           <div className="nav-center">
-            <Link to="/" className="brand" style={{ textDecoration: 'none' }} onClick={() => setIsMenuOpen(false)}>VIRTUAL WARE</Link>
+            <Link to="/" className="brand" style={{ textDecoration: 'none' }} onClick={() => setIsMenuOpen(false)}>TECHORBIT</Link>
           </div>
           
           <div className="nav-right">

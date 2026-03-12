@@ -6,7 +6,7 @@ const COUPONS = {
   'SAVE20': { type: 'percent', value: 20, label: '20% Off — Seasonal Sale' },
   'FLAT50': { type: 'flat', value: 50, label: '$50 Off — Premium Deal' },
   'FREESHIP': { type: 'shipping', value: 0, label: 'Free Shipping' },
-  'VW15': { type: 'percent', value: 15, label: '15% Off — VirtualWare Exclusive' },
+  'TO15': { type: 'percent', value: 15, label: '15% Off — Techorbit Exclusive' },
 };
 
 export default function CartProvider({ children }) {

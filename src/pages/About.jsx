@@ -45,7 +45,7 @@ export default function About() {
           </h1>
           <FadeIn delay={0.5}>
             <p className="about-hero__sub">
-              Born from a passion for technology and design, Virtual Ware connects people with the products that define tomorrow.
+              Born from a passion for technology and design, Techorbit connects people with the products that define tomorrow.
             </p>
           </FadeIn>
         </div>
@@ -81,7 +81,7 @@ export default function About() {
                 It started in 2020 with a simple idea: technology shopping should feel exciting, not exhausting. We were tired of cluttered marketplaces and cookie-cutter experiences.
               </p>
               <p>
-                So we built Virtual Ware — a curated destination where every product is handpicked, every detail is considered, and every customer interaction feels premium. Today, we're proud to serve over 50,000 customers worldwide.
+                So we built Techorbit — a curated destination where every product is handpicked, every detail is considered, and every customer interaction feels premium. Today, we're proud to serve over 50,000 customers worldwide.
               </p>
               <p>
                 Our team of designers, engineers, and product specialists work together to ensure that every aspect of your experience — from browsing to unboxing — is nothing short of exceptional.
@@ -145,7 +145,7 @@ export default function About() {
         <FadeIn>
           <div className="about-cta__inner">
             <h2>Ready to Experience the Difference?</h2>
-            <p>Join 50,000+ customers who already shop smarter with Virtual Ware.</p>
+            <p>Join 50,000+ customers who already shop smarter with Techorbit.</p>
             <div className="about-cta__btns">
               <Link to="/products" className="pill-btn pill-btn-green">
                 Shop Now <ArrowRight size={16} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { validateEmail, validatePassword } from '../utils/validation';
-import './Auth.css'; // We'll create this for shared auth styles
+import './Auth.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -92,10 +93,14 @@ const Login = () => {
             {touched.password && errors.password && <span className="error-message">{errors.password}</span>}
           </div>
 
+          <div className="auth-forgot-link">
+            <Link to="/forgot-password">Forgot Password?</Link>
+          </div>
+
           <button type="submit" className="btn-auth">Login</button>
           
           <div className="auth-footer">
-            <p>Don't have an account? <a href="/signup">Sign up</a></p>
+            <p>Don't have an account? <Link to="/signup">Sign up</Link></p>
           </div>
         </form>
       </div>

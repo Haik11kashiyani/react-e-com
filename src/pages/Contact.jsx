@@ -7,7 +7,7 @@ import { staggerItem } from '../components/common/animationVariants';
 import './Contact.css';
 
 const contactInfo = [
-  { icon: <Mail size={22} />, title: 'Email Us', detail: 'support@virtualware.com', sub: 'We reply within 24 hours' },
+  { icon: <Mail size={22} />, title: 'Email Us', detail: 'support@techorbit.com', sub: 'We reply within 24 hours' },
   { icon: <Phone size={22} />, title: 'Call Us', detail: '+1 (555) 123-4567', sub: 'Mon-Fri, 9am-6pm EST' },
   { icon: <MapPin size={22} />, title: 'Visit Us', detail: '123 Tech Avenue, SF, CA', sub: 'Open for appointments' },
   { icon: <Clock size={22} />, title: 'Business Hours', detail: 'Mon - Fri: 9am - 6pm', sub: 'Weekends: 10am - 4pm' },

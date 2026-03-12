@@ -8,7 +8,7 @@ const testimonials = [
     name: 'Sarah Chen',
     role: 'Creative Director',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop',
-    text: 'Virtual Ware completely changed how I shop for tech. The curation is impeccable — every product feels like it was picked just for me. The MacBook Pro arrived in pristine packaging within 24 hours.',
+    text: 'Techorbit completely changed how I shop for tech. The curation is impeccable — every product feels like it was picked just for me. The MacBook Pro arrived in pristine packaging within 24 hours.',
     rating: 5,
     product: 'MacBook Pro 16"',
   },

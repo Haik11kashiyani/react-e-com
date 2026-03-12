@@ -378,8 +378,8 @@ export default function Products() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="section-tag"><Award size={13} /> Why VirtualWare</span>
-            <h2 className="why-title">The VirtualWare Difference</h2>
+            <span className="section-tag"><Award size={13} /> Why Techorbit</span>
+            <h2 className="why-title">The Techorbit Difference</h2>
             <p className="why-sub">
               We obsess over every detail so you can focus on what matters.
             </p>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 
 function Footer() {
   
@@ -11,13 +12,17 @@ function Footer() {
       
       {/* Big Brand Text */}
       <div className="footer-brand">
-        <span className="brand-text">VIRTUAL WARE</span>
+        <span className="brand-text">TECHORBIT</span>
       </div>
 
       {/* Bottom Bar */}
-      
-        <p className="copyright">© {new Date().getFullYear()} VIRTUAL WARE CO.</p>
-        
+      <div className="footer-bottom">
+        <div className="footer-legal-links">
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/terms-conditions">Terms & Conditions</Link>
+        </div>
+        <p className="copyright">© {new Date().getFullYear()} TECHORBIT CO.</p>
+      </div>
       
     </footer>
   );

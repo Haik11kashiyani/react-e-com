@@ -29,13 +29,16 @@ import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Wishlist from './pages/Wishlist'
 import Profile from './pages/Profile'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsConditions from './pages/TermsConditions'
+import ForgotPassword from './pages/ForgotPassword'
 
 // Styles
 import './styles/animations.css'
 
 function App() {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/forgot-password';
 
   return (
     <ThemeProvider>
@@ -65,6 +68,9 @@ function App() {
             <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
             <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
             <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+            <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+            <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+            <Route path="/terms-conditions" element={<PageTransition><TermsConditions /></PageTransition>} />
           </Routes>
         </AnimatePresence>
         {!isAuthPage && <Footer />}
