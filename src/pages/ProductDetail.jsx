@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div/img
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ChevronLeft, Minus, Plus, ArrowUpRight, Sparkles, CheckCircle } from 'lucide-react';
-import { getProductById, getRelatedProducts } from '../data/products';
+import { getProductById as getStaticProduct, getRelatedProducts as getStaticRelated } from '../data/products';
+import { fetchProductById, fetchRelatedProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
 import { FadeIn, SplitText, RevealText, ScaleIn } from '../components/common/AnimatedComponents';
+import LazyImage from '../components/common/LazyImage';
+import { SkeletonProductDetail as SkeletonPD } from '../components/common/UserSkeleton';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -19,16 +22,34 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('features');
 
   useEffect(() => {
-    const p = getProductById(id);
-    if (!p) { navigate('/products'); return; }
-    setProduct(p);
-    setRelated(getRelatedProducts(id));
+    let cancelled = false;
+    // Try API first, fall back to static
+    fetchProductById(id)
+      .then((res) => {
+        if (!cancelled && res.data.product) {
+          setProduct(res.data.product);
+          return fetchRelatedProducts(id);
+        }
+      })
+      .then((res) => {
+        if (!cancelled && res?.data?.products) setRelated(res.data.products);
+      })
+      .catch(() => {
+        // Fallback to static data
+        const p = getStaticProduct(id);
+        if (!p) { navigate('/products'); return; }
+        if (!cancelled) {
+          setProduct(p);
+          setRelated(getStaticRelated(id));
+        }
+      });
     setSelectedImage(0);
     setQty(1);
     setSelectedColor(0);
+    return () => { cancelled = true; };
   }, [id, navigate]);
 
-  if (!product) return null;
+  if (!product) return <SkeletonPD />;
 
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
@@ -261,7 +282,7 @@ export default function ProductDetail() {
               <FadeIn key={rp.id} delay={i * 0.1}>
                 <Link to={`/products/${rp.id}`} className="pd-related__card">
                   <div className="pd-related__img">
-                    <img src={rp.image} alt={rp.name} loading="lazy" />
+                    <LazyImage src={rp.image} alt={rp.name} />
                   </div>
                   <div className="pd-related__info">
                     <span className="pd-related__brand">{rp.brand}</span>

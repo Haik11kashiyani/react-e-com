@@ -1,0 +1,110 @@
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Attach token to every request automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('techorbit_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle 401 globally
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('techorbit_token');
+      localStorage.removeItem('techorbit_user');
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Normalize _id → id on product objects
+function normalizeProduct(p) {
+  if (p && p._id && !p.id) return { ...p, id: p._id };
+  return p;
+}
+
+// ─── Products ────────────────────────────────────────
+export const fetchProducts = (params) =>
+  api.get('/products', { params }).then((res) => {
+    if (res.data.products) res.data.products = res.data.products.map(normalizeProduct);
+    return res;
+  });
+export const fetchProductById = (id) =>
+  api.get(`/products/${id}`).then((res) => {
+    if (res.data.product) res.data.product = normalizeProduct(res.data.product);
+    return res;
+  });
+export const fetchRelatedProducts = (id) =>
+  api.get(`/products/${id}/related`).then((res) => {
+    if (res.data.products) res.data.products = res.data.products.map(normalizeProduct);
+    return res;
+  });
+export const fetchCategories = () => api.get('/products/categories');
+
+// ─── Auth ────────────────────────────────────────────
+export const registerUser = (data) => api.post('/auth/register', data);
+export const loginUser = (data) => api.post('/auth/login', data);
+export const getMe = () => api.get('/auth/me');
+export const updateProfile = (data) => api.put('/auth/profile', data);
+
+// ─── Orders ──────────────────────────────────────────
+export const createOrder = (data) => api.post('/orders', data);
+export const fetchMyOrders = () => api.get('/orders');
+export const fetchOrderById = (id) => api.get(`/orders/${id}`);
+
+// ─── Reviews / Testimonials ─────────────────────────
+export const fetchTestimonials = () => api.get('/reviews/testimonials');
+export const fetchReviews = () => api.get('/reviews');
+export const submitReview = (data) => api.post('/reviews', data);
+
+// ─── Coupons ─────────────────────────────────────────
+export const validateCoupon = (code) => api.post('/coupons/validate', { code });
+export const fetchCoupons = () => api.get('/coupons');
+
+// ─── Contact ─────────────────────────────────────────
+export const submitContactForm = (data) => api.post('/contact', data);
+
+// ─── Admin ───────────────────────────────────────────
+export const fetchAdminStats = () => api.get('/admin/stats');
+
+// Admin — Users
+export const fetchAllUsers = (params) => api.get('/admin/users', { params });
+export const fetchUserById = (id) => api.get(`/admin/users/${id}`);
+export const toggleUserActive = (id) => api.patch(`/admin/users/${id}/toggle-active`);
+export const updateUserRole = (id, role) => api.patch(`/admin/users/${id}/role`, { role });
+export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
+
+// Admin — Orders
+export const fetchAllOrders = (params) => api.get('/admin/orders', { params });
+export const updateOrderStatus = (id, status) => api.patch(`/admin/orders/${id}/status`, { status });
+
+// Admin — Products (reuse existing endpoints)
+export const adminCreateProduct = (data) => api.post('/products', data);
+export const adminUpdateProduct = (id, data) => api.put(`/products/${id}`, data);
+export const adminDeleteProduct = (id) => api.delete(`/products/${id}`);
+
+// Admin — Coupons
+export const adminCreateCoupon = (data) => api.post('/admin/coupons', data);
+export const adminUpdateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, data);
+export const adminDeleteCoupon = (id) => api.delete(`/admin/coupons/${id}`);
+
+// Admin — Reviews
+export const adminDeleteReview = (id) => api.delete(`/admin/reviews/${id}`);
+
+// Admin — Contacts
+export const fetchContactMessages = () => api.get('/admin/contacts');
+export const markContactRead = (id) => api.patch(`/admin/contacts/${id}/read`);
+export const deleteContactMessage = (id) => api.delete(`/admin/contacts/${id}`);
+
+export default api;

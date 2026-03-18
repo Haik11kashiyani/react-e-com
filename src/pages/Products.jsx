@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div
 import {
@@ -7,10 +7,12 @@ import {
   ChevronRight, TrendingUp, Sparkles, LayoutGrid, Columns3,
   Package, Clock, BadgeCheck
 } from 'lucide-react';
-import { allProducts, categories } from '../data/products';
+import { allProducts as staticProducts, categories } from '../data/products';
+import { fetchProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
 import { SplitText, FadeIn, StaggerContainer, RevealText } from '../components/common/AnimatedComponents';
 import ProductCompare from '../components/ProductCompare';
+import LazyImage from '../components/common/LazyImage';
 import './Products.css';
 
 const sortOptions = [
@@ -34,7 +36,16 @@ export default function Products() {
   const [sortBy, setSortBy] = useState('featured');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
+  const [allProducts, setAllProducts] = useState(staticProducts);
   const heroRef = useRef(null);
+
+  useEffect(() => {
+    fetchProducts()
+      .then((res) => {
+        if (res.data.products?.length) setAllProducts(res.data.products);
+      })
+      .catch(() => { /* fallback to static data */ });
+  }, []);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
@@ -183,7 +194,7 @@ export default function Products() {
                 <Link to={`/products/${product.id}`} className="trending-card__link">
                   <div className="trending-card__img">
                     <span className="trending-card__rank">#{i + 1}</span>
-                    <img src={product.image} alt={product.name} />
+                    <LazyImage src={product.image} alt={product.name} />
                   </div>
                   <div className="trending-card__info">
                     <span className="trending-card__brand">{product.brand}</span>
@@ -290,7 +301,7 @@ export default function Products() {
                   <Link to={`/products/${product.id}`} className="p-card__link">
                     <div className="p-card__img-wrap">
                       <span className="p-card__tag">{product.tag}</span>
-                      <img src={product.image} alt={product.name} loading="lazy" />
+                      <LazyImage src={product.image} alt={product.name} />
                       <div className="p-card__overlay">
                         <span className="p-card__view">
                           Quick View <ArrowUpRight size={14} />

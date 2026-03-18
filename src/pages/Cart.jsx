@@ -63,9 +63,11 @@ export default function Cart() {
               </div>
 
               <AnimatePresence mode="popLayout">
-                {cart.map((item) => (
+                {cart.map((item) => {
+                  const itemId = item._id || item.id;
+                  return (
                   <motion.div
-                    key={item.id}
+                    key={itemId}
                     className="cart-item"
                     layout
                     initial={{ opacity: 0, x: -30 }}
@@ -74,11 +76,11 @@ export default function Cart() {
                     transition={{ duration: 0.35 }}
                   >
                     <div className="cart-item__product">
-                      <Link to={`/products/${item.id}`} className="cart-item__img-wrap">
+                      <Link to={`/products/${itemId}`} className="cart-item__img-wrap">
                         <img src={item.image} alt={item.name} />
                       </Link>
                       <div className="cart-item__info">
-                        <Link to={`/products/${item.id}`} className="cart-item__name">{item.name}</Link>
+                        <Link to={`/products/${itemId}`} className="cart-item__name">{item.name}</Link>
                         <span className="cart-item__brand">{item.brand}</span>
                       </div>
                     </div>
@@ -86,22 +88,23 @@ export default function Cart() {
                     <div className="cart-item__price">${item.price.toFixed(2)}</div>
 
                     <div className="cart-item__qty">
-                      <button onClick={() => updateQty(item.id, item.qty - 1)} disabled={item.qty <= 1}>
+                      <button onClick={() => updateQty(itemId, item.qty - 1)} disabled={item.qty <= 1}>
                         <Minus size={14} />
                       </button>
                       <span>{item.qty}</span>
-                      <button onClick={() => updateQty(item.id, item.qty + 1)}>
+                      <button onClick={() => updateQty(itemId, item.qty + 1)}>
                         <Plus size={14} />
                       </button>
                     </div>
 
                     <div className="cart-item__total">${(item.price * item.qty).toFixed(2)}</div>
 
-                    <button className="cart-item__remove" onClick={() => removeFromCart(item.id)}>
+                    <button className="cart-item__remove" onClick={() => removeFromCart(itemId)}>
                       <Trash2 size={16} />
                     </button>
                   </motion.div>
-                ))}
+                  );
+                })}
               </AnimatePresence>
 
               <div className="cart-items__footer">

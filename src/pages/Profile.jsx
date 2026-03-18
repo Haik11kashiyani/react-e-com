@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Tag, MapPin, Globe, Settings, ChevronRight,
-  Copy, Check, Trash2, Plus, Edit2, Save, ArrowLeft
+  Copy, Check, Trash2, Plus, Edit2, Save, ArrowLeft, LogOut
 } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
+import { updateProfile } from '../utils/api';
 import { SplitText, FadeIn } from '../components/common/AnimatedComponents';
 import './Profile.css';
 
@@ -27,6 +29,8 @@ const languages = [
 
 export default function Profile() {
   const { availableCoupons, appliedCoupon } = useCart();
+  const { user, logout, setUser } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState('coupons');
   const [copied, setCopied] = useState('');
   const [language, setLanguage] = useState('en');
@@ -36,8 +40,34 @@ export default function Profile() {
   const [editingAddr, setEditingAddr] = useState(null);
   const [addrForm, setAddrForm] = useState({ label: '', name: '', line: '', city: '', state: '', zip: '', phone: '' });
   const [showAddrForm, setShowAddrForm] = useState(false);
-  const [profileName, setProfileName] = useState('John Doe');
-  const [profileEmail, setProfileEmail] = useState('john@example.com');
+  const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileName(`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User');
+      setProfileEmail(user.email || '');
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleSaveProfile = async () => {
+    const parts = profileName.trim().split(/\s+/);
+    const firstName = parts[0] || '';
+    const lastName = parts.slice(1).join(' ') || '';
+    setSaving(true);
+    try {
+      const res = await updateProfile({ firstName, lastName, email: profileEmail });
+      setUser(res.data.user);
+      localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+    } catch { /* silent */ }
+    setSaving(false);
+  };
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -70,6 +100,15 @@ export default function Profile() {
     setEditingAddr(addr.id);
     setShowAddrForm(true);
   };
+
+  if (!user) {
+    return (
+      <div className="profile-page" style={{ paddingTop: '200px', textAlign: 'center' }}>
+        <h2>Please log in to view your profile</h2>
+        <Link to="/login" className="pill-btn pill-btn-primary" style={{ marginTop: '1rem' }}>Login</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-page">
@@ -110,6 +149,9 @@ export default function Profile() {
                 </button>
               ))}
             </nav>
+            <button className="pill-btn pill-btn-outline" style={{ width: '100%', marginTop: '1rem' }} onClick={handleLogout}>
+              <LogOut size={16} /> Logout
+            </button>
           </aside>
 
           {/* Main content */}
@@ -266,6 +308,9 @@ export default function Profile() {
                         <span className="toggle__slider" />
                       </label>
                     </div>
+                    <button className="pill-btn pill-btn-primary pill-btn-sm" style={{ marginTop: '1rem' }} onClick={handleSaveProfile} disabled={saving}>
+                      <Save size={14} /> {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
                   </div>
                 </motion.div>
               )}

@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import CartContext from './CartContext';
+import { validateCoupon as validateCouponAPI, fetchCoupons } from '../utils/api';
 
-const COUPONS = {
+const FALLBACK_COUPONS = {
   'WELCOME10': { type: 'percent', value: 10, label: '10% Off — Welcome Offer' },
   'SAVE20': { type: 'percent', value: 20, label: '20% Off — Seasonal Sale' },
   'FLAT50': { type: 'flat', value: 50, label: '$50 Off — Premium Deal' },
@@ -14,6 +15,7 @@ export default function CartProvider({ children }) {
   const [toast, setToast] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
+  const [availableCoupons, setAvailableCoupons] = useState(FALLBACK_COUPONS);
   const [wishlist, setWishlist] = useState(() => {
     try { return JSON.parse(localStorage.getItem('vw_wishlist')) || []; }
     catch { return []; }
@@ -23,20 +25,40 @@ export default function CartProvider({ children }) {
     localStorage.setItem('vw_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
+  // Fetch coupons from API
+  useEffect(() => {
+    fetchCoupons()
+      .then((res) => {
+        const couponsMap = {};
+        res.data.coupons.forEach((c) => {
+          couponsMap[c.code] = { type: c.type, value: c.value, label: c.label };
+        });
+        if (Object.keys(couponsMap).length > 0) setAvailableCoupons(couponsMap);
+      })
+      .catch(() => { /* keep fallback */ });
+  }, []);
+
   const showToast = useCallback((message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  const applyCoupon = useCallback((code) => {
+  const applyCoupon = useCallback(async (code) => {
     const upper = code.trim().toUpperCase();
     if (!upper) { setCouponError('Enter a coupon code'); return false; }
-    const coupon = COUPONS[upper];
-    if (!coupon) { setCouponError('Invalid coupon code'); setAppliedCoupon(null); return false; }
-    setAppliedCoupon({ code: upper, ...coupon });
-    setCouponError('');
-    showToast(`Coupon "${upper}" applied!`);
-    return true;
+    try {
+      const res = await validateCouponAPI(upper);
+      const coupon = res.data.coupon;
+      setAppliedCoupon({ code: coupon.code, ...coupon });
+      setCouponError('');
+      showToast(`Coupon "${coupon.code}" applied!`);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Invalid coupon code';
+      setCouponError(msg);
+      setAppliedCoupon(null);
+      return false;
+    }
   }, [showToast]);
 
   const removeCoupon = useCallback(() => {
@@ -45,11 +67,12 @@ export default function CartProvider({ children }) {
   }, []);
 
   const addToCart = useCallback((product, qty = 1) => {
+    const pid = product._id || product.id;
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => (item._id || item.id) === pid);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + qty } : item
+          (item._id || item.id) === pid ? { ...item, qty: item.qty + qty } : item
         );
       }
       return [...prev, { ...product, qty }];
@@ -58,13 +81,13 @@ export default function CartProvider({ children }) {
   }, [showToast]);
 
   const removeFromCart = useCallback((id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => (item._id || item.id) !== id));
   }, []);
 
   const updateQty = useCallback((id, qty) => {
     if (qty < 1) return removeFromCart(id);
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty } : item))
+      prev.map((item) => ((item._id || item.id) === id ? { ...item, qty } : item))
     );
   }, [removeFromCart]);
 
@@ -99,7 +122,7 @@ export default function CartProvider({ children }) {
         items, addToCart, removeFromCart, updateQty, clearCart,
         totalItems, totalPrice, toast,
         appliedCoupon, couponError, applyCoupon, removeCoupon, discount,
-        availableCoupons: COUPONS,
+        availableCoupons,
         wishlist, toggleWishlist, isInWishlist,
       }}
     >

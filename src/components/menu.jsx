@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import './menu.css'
-import { Menu as MenuIcon, X, ShoppingCart, Heart, Sun, Moon, User } from 'lucide-react'
+import { Menu as MenuIcon, X, ShoppingCart, Heart, Sun, Moon, User, LogOut } from 'lucide-react'
 import { useCart } from '../hooks/useCart'
 import { useTheme } from '../hooks/useTheme'
+import useAuth from '../hooks/useAuth'
 
 function MenuBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const { totalItems } = useCart()
   const { dark, toggle } = useTheme()
 
@@ -103,8 +106,17 @@ function MenuBar() {
             <div className="menu-column">
                 <span className="menu-label">ACCOUNT</span>
                 <ul className="menu-links menu-links--sm">
-                    <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link></li>
-                    <li><Link to="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link></li>
+                    {user ? (
+                      <>
+                        <li><Link to="/profile" onClick={() => setIsMenuOpen(false)}>Hi, {user.firstName || 'User'}</Link></li>
+                        <li><button className="menu-link-btn" onClick={() => { logout(); setIsMenuOpen(false); navigate('/login'); }}>Logout</button></li>
+                      </>
+                    ) : (
+                      <>
+                        <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link></li>
+                        <li><Link to="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link></li>
+                      </>
+                    )}
                 </ul>
                 <button className="menu-theme-toggle" onClick={toggle}>
                   {dark ? <Sun size={16} /> : <Moon size={16} />}

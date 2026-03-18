@@ -4,7 +4,13 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./config/database.js";
-// import authRoutes from "./routes/auth.js";
+import authRoutes from "./routes/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import process from "process";
 
 dotenv.config();
@@ -32,7 +38,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

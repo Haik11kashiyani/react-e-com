@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { Star, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
+import { fetchTestimonials } from '../utils/api';
 import './Testimonials.css';
 
-const testimonials = [
+const staticTestimonials = [
   {
     name: 'Sarah Chen',
     role: 'Creative Director',
@@ -40,11 +41,20 @@ const testimonials = [
 
 function Testimonials() {
   const [active, setActive] = useState(0);
+  const [testimonials, setTestimonials] = useState(staticTestimonials);
+
+  useEffect(() => {
+    fetchTestimonials()
+      .then((res) => {
+        if (res.data.testimonials?.length) setTestimonials(res.data.testimonials);
+      })
+      .catch(() => { /* keep static */ });
+  }, []);
 
   useEffect(() => {
     const iv = setInterval(() => setActive((p) => (p + 1) % testimonials.length), 6000);
     return () => clearInterval(iv);
-  }, []);
+  }, [testimonials.length]);
 
   const prev = () => setActive((p) => (p - 1 + testimonials.length) % testimonials.length);
   const next = () => setActive((p) => (p + 1) % testimonials.length);

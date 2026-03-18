@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { validateEmail, validatePassword, validateName, validateConfirmPassword } from '../utils/validation';
+import useAuth from '../hooks/useAuth';
 import './Auth.css';
 
 const Signup = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
+    phone: '',
+    gender: '',
     password: '',
     confirmPassword: ''
   });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,7 +36,7 @@ const Signup = () => {
     setTouched(prev => ({ ...prev, [name]: true }));
     
     let error = null;
-    if (name === 'name') error = validateName(value);
+    if (name === 'firstName' || name === 'lastName') error = validateName(value);
     if (name === 'email') error = validateEmail(value);
     if (name === 'password') error = validatePassword(value);
     if (name === 'confirmPassword') error = validateConfirmPassword(formData.password, value);
@@ -38,28 +47,42 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    const nameError = validateName(formData.name);
+    const firstNameError = validateName(formData.firstName);
+    const lastNameError = validateName(formData.lastName);
     const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
     const confirmPasswordError = validateConfirmPassword(formData.password, formData.confirmPassword);
     
     setErrors({
-      name: nameError,
+      firstName: firstNameError,
+      lastName: lastNameError,
       email: emailError,
       password: passwordError,
       confirmPassword: confirmPasswordError
     });
     
     setTouched({
-        name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         password: true,
         confirmPassword: true
     });
 
-    if (!nameError && !emailError && !passwordError && !confirmPasswordError) {
-      console.log('Signup successful', formData);
-      // Proceed with signup logic
+    if (!firstNameError && !lastNameError && !emailError && !passwordError && !confirmPasswordError) {
+      setLoading(true);
+      setServerError('');
+      register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        gender: formData.gender,
+        password: formData.password,
+      })
+        .then(() => navigate('/'))
+        .catch((err) => setServerError(err.response?.data?.message || 'Registration failed'))
+        .finally(() => setLoading(false));
     }
   };
 
@@ -69,20 +92,36 @@ const Signup = () => {
         <h2 className="auth-title">Create Account</h2>
         <p className="auth-subtitle">Join us to explore the collection</p>
         
+        {serverError && <p className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>{serverError}</p>}
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+            <label htmlFor="firstName">First Name</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
               onChange={handleChange}
               onBlur={handleBlur}
-              className={touched.name && errors.name ? 'error' : ''}
-              placeholder="Enter your full name"
+              className={touched.firstName && errors.firstName ? 'error' : ''}
+              placeholder="Enter your first name"
             />
-            {touched.name && errors.name && <span className="error-message">{errors.name}</span>}
+            {touched.firstName && errors.firstName && <span className="error-message">{errors.firstName}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={touched.lastName && errors.lastName ? 'error' : ''}
+              placeholder="Enter your last name"
+            />
+            {touched.lastName && errors.lastName && <span className="error-message">{errors.lastName}</span>}
           </div>
 
           <div className="form-group">
@@ -98,6 +137,35 @@ const Signup = () => {
               placeholder="Enter your email"
             />
             {touched.email && errors.email && <span className="error-message">{errors.email}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gender">Gender</label>
+            <select
+              id="gender"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              onBlur={handleBlur}
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
           </div>
 
           <div className="form-group">
@@ -130,10 +198,10 @@ const Signup = () => {
             {touched.confirmPassword && errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
           </div>
 
-          <button type="submit" className="btn-auth">Sign Up</button>
+          <button type="submit" className="btn-auth" disabled={loading}>{loading ? 'Creating Account...' : 'Sign Up'}</button>
           
           <div className="auth-footer">
-            <p>Already have an account? <a href="/login">Login</a></p>
+            <p>Already have an account? <Link to="/login">Login</Link></p>
           </div>
         </form>
       </div>

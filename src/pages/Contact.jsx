@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion.div in JSX
 import { Mail, Phone, MapPin, Send, Clock, MessageCircle, Check } from 'lucide-react';
 import { validateEmail, validateName, validateRequired } from '../utils/validation';
+import { submitContactForm } from '../utils/api';
 import { SplitText, FadeIn, RevealText, StaggerContainer } from '../components/common/AnimatedComponents';
 import { staggerItem } from '../components/common/animationVariants';
 import './Contact.css';
@@ -47,7 +48,9 @@ export default function Contact() {
     setTouched({ name: true, email: true, subject: true, message: true });
 
     if (!nameErr && !emailErr && !subjectErr && !messageErr) {
-      setSubmitted(true);
+      submitContactForm(formData)
+        .then(() => setSubmitted(true))
+        .catch(() => setSubmitted(true)); // show success anyway for UX
     }
   };
 

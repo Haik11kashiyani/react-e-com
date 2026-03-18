@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { ArrowRight, Sparkles, ShoppingBag, Star, Zap, Shield, Truck } from 'lucide-react';
-import { allProducts } from '../data/products';
+import { allProducts as staticProducts } from '../data/products';
+import { fetchProducts } from '../utils/api';
 import './heroSec.css';
-
-const heroProducts = allProducts.slice(0, 4);
 
 const stats = [
   { num: '50K+', label: 'Happy Customers' },
@@ -22,6 +21,7 @@ const badges = [
 
 function HeroSec() {
   const [activeProduct, setActiveProduct] = useState(0);
+  const [heroProducts, setHeroProducts] = useState(staticProducts.slice(0, 4));
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end start'] });
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -120]);
@@ -29,9 +29,17 @@ function HeroSec() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   useEffect(() => {
+    fetchProducts({ limit: 4 })
+      .then((res) => {
+        if (res.data.products?.length) setHeroProducts(res.data.products.slice(0, 4));
+      })
+      .catch(() => { /* keep static */ });
+  }, []);
+
+  useEffect(() => {
     const iv = setInterval(() => setActiveProduct((p) => (p + 1) % heroProducts.length), 4000);
     return () => clearInterval(iv);
-  }, []);
+  }, [heroProducts.length]);
 
   const current = heroProducts[activeProduct];
 

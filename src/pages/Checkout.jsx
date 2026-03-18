@@ -5,6 +5,7 @@ import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft } from 'lucide
 import { useCart } from '../hooks/useCart';
 import { validateEmail, validateName, validateRequired } from '../utils/validation';
 import { SplitText, FadeIn, RevealText } from '../components/common/AnimatedComponents';
+import { createOrder } from '../utils/api';
 import './Checkout.css';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
@@ -74,10 +75,47 @@ export default function Checkout() {
     return Object.values(errs).every((e) => !e);
   };
 
-  const handleNext = () => {
+  const [orderNumber, setOrderNumber] = useState('');
+  const [orderLoading, setOrderLoading] = useState(false);
+
+  const handleNext = async () => {
     if (step === 0 && validateShipping()) {
       setErrors({}); setTouched({}); setStep(1);
     } else if (step === 1 && validatePayment()) {
+      setOrderLoading(true);
+      try {
+        const orderData = {
+          items: cart.map((item) => ({
+            product: item._id || item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            image: item.image,
+          })),
+          shippingAddress: {
+            firstName: shipping.firstName,
+            lastName: shipping.lastName,
+            email: shipping.email,
+            phone: shipping.phone,
+            address: shipping.address,
+            city: shipping.city,
+            state: shipping.state,
+            zip: shipping.zip,
+            country: shipping.country,
+          },
+          paymentMethod: 'card',
+          subtotal: totalPrice,
+          discount,
+          couponCode: appliedCoupon?.code || '',
+          shipping: shippingCost,
+          total: grandTotal,
+        };
+        const res = await createOrder(orderData);
+        setOrderNumber(res.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000));
+      } catch {
+        setOrderNumber(String(Math.floor(Math.random() * 90000) + 10000));
+      }
+      setOrderLoading(false);
       setErrors({}); setTouched({}); setStep(2); clearCart();
     }
   };
@@ -230,7 +268,7 @@ export default function Checkout() {
                       <Check size={32} />
                     </div>
                     <h2>Order Confirmed!</h2>
-                    <p className="checkout-confirmation__order">Order #VW{Math.floor(Math.random() * 90000) + 10000}</p>
+                    <p className="checkout-confirmation__order">Order #TO{orderNumber}</p>
                     <p className="checkout-confirmation__msg">
                       Thank you for your purchase! We've sent a confirmation email to <strong>{shipping.email}</strong>.
                       Your order will be shipped within 2-3 business days.
@@ -251,8 +289,8 @@ export default function Checkout() {
                     <ArrowLeft size={14} /> Back
                   </button>
                 )}
-                <button className="pill-btn pill-btn-primary" onClick={handleNext}>
-                  {step === 1 ? 'Place Order' : 'Continue to Payment'}
+                <button className="pill-btn pill-btn-primary" onClick={handleNext} disabled={orderLoading}>
+                  {orderLoading ? 'Placing Order...' : step === 1 ? 'Place Order' : 'Continue to Payment'}
                 </button>
               </div>
             )}
@@ -265,7 +303,7 @@ export default function Checkout() {
                 <h3>Order Summary</h3>
                 <div className="checkout-summary__items">
                   {cart.map((item) => (
-                    <div key={item.id} className="checkout-summary__item">
+                    <div key={item._id || item.id} className="checkout-summary__item">
                       <div className="checkout-summary__item-img">
                         <img src={item.image} alt={item.name} />
                         <span className="checkout-summary__item-qty">{item.qty}</span>

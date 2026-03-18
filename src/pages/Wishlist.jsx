@@ -3,15 +3,26 @@ import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, Star, ArrowLeft } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
-import { allProducts } from '../data/products';
+import { allProducts as staticProducts } from '../data/products';
+import { fetchProducts } from '../utils/api';
 import { SplitText, FadeIn, StaggerContainer } from '../components/common/AnimatedComponents';
 import { staggerItem } from '../components/common/animationVariants';
+import LazyImage from '../components/common/LazyImage';
 import './Wishlist.css';
 
 export default function Wishlist() {
   const { addToCart, wishlist, toggleWishlist } = useCart();
+  const [allProducts, setAllProducts] = React.useState(staticProducts);
 
-  const wishItems = allProducts.filter((p) => wishlist.includes(p.id));
+  React.useEffect(() => {
+    fetchProducts()
+      .then((res) => {
+        if (res.data.products?.length) setAllProducts(res.data.products);
+      })
+      .catch(() => {});
+  }, []);
+
+  const wishItems = allProducts.filter((p) => wishlist.includes(p._id || p.id));
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -50,7 +61,7 @@ export default function Wishlist() {
               <motion.div key={product.id} variants={staggerItem} className="wishlist-card" layout>
                 <div className="wishlist-card__img">
                   <Link to={`/products/${product.id}`}>
-                    <img src={product.image} alt={product.name} />
+                    <LazyImage src={product.image} alt={product.name} />
                   </Link>
                   <button className="wishlist-card__remove" onClick={() => removeItem(product.id)}>
                     <Trash2 size={16} />

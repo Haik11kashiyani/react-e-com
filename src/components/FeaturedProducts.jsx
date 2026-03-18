@@ -2,16 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { ArrowRight, ShoppingCart, Star, Sparkles, Heart } from 'lucide-react';
-import { allProducts } from '../data/products';
+import { allProducts as staticProducts } from '../data/products';
+import { fetchProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
+import LazyImage from './common/LazyImage';
 import './FeaturedProducts.css';
 
-const featured = allProducts.slice(0, 8);
 const VISIBLE = 4;
 
 function FeaturedProducts() {
   const [page, setPage] = useState(0);
+  const [featured, setFeatured] = useState(staticProducts.slice(0, 8));
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
+
+  useEffect(() => {
+    fetchProducts({ limit: 8 })
+      .then((res) => {
+        if (res.data.products?.length) setFeatured(res.data.products.slice(0, 8));
+      })
+      .catch(() => { /* keep static */ });
+  }, []);
+
   const totalPages = Math.ceil(featured.length / VISIBLE);
 
   useEffect(() => {
@@ -90,7 +101,7 @@ function FeaturedProducts() {
               >
                 <Link to={`/products/${product.id}`} className="fp-card__img-wrap">
                   <span className="fp-card__tag">{product.tag}</span>
-                  <img src={product.image} alt={product.name} loading="lazy" />
+                  <LazyImage src={product.image} alt={product.name} />
                   <div className="fp-card__overlay">
                     <span>View Details <ArrowRight size={14} /></span>
                   </div>
