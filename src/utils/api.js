@@ -60,6 +60,9 @@ export const resendEmailOtp = (data) => api.post('/auth/resend-email-otp', data)
 export const requestPasswordResetOtp = (data) => api.post('/auth/forgot-password/request-otp', data);
 export const verifyPasswordResetOtp = (data) => api.post('/auth/forgot-password/verify-otp', data);
 export const resetPasswordWithOtp = (data) => api.post('/auth/forgot-password/reset', data);
+export const requestAdminPasswordResetOtp = (data) => api.post('/auth/admin/forgot-password/request-otp', data);
+export const verifyAdminPasswordResetOtp = (data) => api.post('/auth/admin/forgot-password/verify-otp', data);
+export const resetAdminPasswordWithOtp = (data) => api.post('/auth/admin/forgot-password/reset', data);
 export const getMe = () => api.get('/auth/me');
 export const updateProfile = (data) => api.put('/auth/profile', data);
 

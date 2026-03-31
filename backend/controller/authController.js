@@ -50,6 +50,19 @@ const sendOtpEmail = async ({ toEmail, otp, purpose }) => {
   });
 };
 
+const findUserForPasswordReset = async ({ email, adminOnly = false, withSensitive = false }) => {
+  const query = { email: email.toLowerCase() };
+  if (adminOnly) {
+    query.role = "admin";
+  }
+
+  const selection = withSensitive
+    ? "+password +resetPasswordOtpHash +resetPasswordOtpExpiresAt"
+    : "+resetPasswordOtpHash +resetPasswordOtpExpiresAt";
+
+  return User.findOne(query).select(selection);
+};
+
 const userResponse = (user) => ({
   id: user._id,
   firstName: user.firstName,
@@ -531,5 +544,160 @@ export const resetPasswordWithOtp = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Server error resetting password" });
+  }
+};
+
+// POST /api/auth/admin/forgot-password/request-otp
+export const requestAdminPasswordResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: "admin" });
+
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If this admin email exists, OTP has been sent.",
+      });
+    }
+
+    const otp = generateOtp();
+    user.set(setOtpDetails("resetPassword", otp));
+    await user.save();
+
+    await sendOtpEmail({
+      toEmail: user.email,
+      otp,
+      purpose: "passwordReset",
+    });
+
+    return res.json({
+      success: true,
+      message: "Admin password reset OTP sent",
+    });
+  } catch (error) {
+    console.error("requestAdminPasswordResetOtp error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error sending admin password reset OTP",
+    });
+  }
+};
+
+// POST /api/auth/admin/forgot-password/verify-otp
+export const verifyAdminPasswordResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and OTP are required" });
+    }
+
+    const user = await findUserForPasswordReset({
+      email,
+      adminOnly: true,
+      withSensitive: false,
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin user not found" });
+    }
+
+    const isExpired =
+      !user.resetPasswordOtpExpiresAt ||
+      user.resetPasswordOtpExpiresAt.getTime() < Date.now();
+    if (isExpired) {
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP expired" });
+    }
+
+    if (user.resetPasswordOtpHash !== hashOtp(String(otp))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid OTP" });
+    }
+
+    return res.json({
+      success: true,
+      message: "OTP verified",
+    });
+  } catch (error) {
+    console.error("verifyAdminPasswordResetOtp error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error verifying admin OTP" });
+  }
+};
+
+// POST /api/auth/admin/forgot-password/reset
+export const resetAdminPasswordWithOtp = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, OTP and newPassword are required",
+      });
+    }
+
+    const user = await findUserForPasswordReset({
+      email,
+      adminOnly: true,
+      withSensitive: true,
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin user not found" });
+    }
+
+    const isExpired =
+      !user.resetPasswordOtpExpiresAt ||
+      user.resetPasswordOtpExpiresAt.getTime() < Date.now();
+    if (isExpired) {
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP expired" });
+    }
+
+    if (user.resetPasswordOtpHash !== hashOtp(String(otp))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid OTP" });
+    }
+
+    user.password = newPassword;
+    user.set(clearOtpDetails("resetPassword"));
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Admin password reset successful",
+    });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res
+        .status(400)
+        .json({ success: false, message: messages.join(", ") });
+    }
+
+    console.error("resetAdminPasswordWithOtp error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error resetting admin password" });
   }
 };

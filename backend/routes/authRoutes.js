@@ -9,6 +9,9 @@ import {
 	requestPasswordResetOtp,
 	verifyPasswordResetOtp,
 	resetPasswordWithOtp,
+	requestAdminPasswordResetOtp,
+	verifyAdminPasswordResetOtp,
+	resetAdminPasswordWithOtp,
 } from "../controller/authController.js";
 import auth from "../middleware/auth.js";
 
@@ -21,6 +24,9 @@ router.post("/resend-email-otp", resendEmailOtp);
 router.post("/forgot-password/request-otp", requestPasswordResetOtp);
 router.post("/forgot-password/verify-otp", verifyPasswordResetOtp);
 router.post("/forgot-password/reset", resetPasswordWithOtp);
+router.post("/admin/forgot-password/request-otp", requestAdminPasswordResetOtp);
+router.post("/admin/forgot-password/verify-otp", verifyAdminPasswordResetOtp);
+router.post("/admin/forgot-password/reset", resetAdminPasswordWithOtp);
 router.get("/me", auth, getMe);
 router.put("/profile", auth, updateProfile);
 

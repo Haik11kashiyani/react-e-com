@@ -123,6 +123,8 @@ const Login = () => {
 
           <div className="auth-forgot-link">
             <Link to="/forgot-password">Forgot Password?</Link>
+            <span style={{ margin: '0 6px', color: '#9ca3af' }}>|</span>
+            <Link to="/admin/forgot-password">Admin Forgot Password?</Link>
           </div>
 
           <button type="submit" className="btn-auth" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>

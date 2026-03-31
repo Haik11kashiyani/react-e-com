@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import process from "process";
+import bcrypt from "bcryptjs";
 import User from "./models/Users.js";
 
 dotenv.config();
+
+const ADMIN_EMAIL = "projectbcaall@gmail.com";
+const ADMIN_PASSWORD = "admin@123";
 
 async function seedAdmin() {
   try {
@@ -11,32 +15,42 @@ async function seedAdmin() {
     await mongoose.connect(uri);
     console.log("Connected to MongoDB");
 
-    // Check if admin already exists
-    const existing = await User.findOne({ email: "admin@techorbit.com" });
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+    const existing = await User.collection.findOne({ email: ADMIN_EMAIL });
+
+    await User.collection.updateOne(
+      { email: ADMIN_EMAIL },
+      {
+        $set: {
+          firstName: "Admin",
+          lastName: "TechOrbit",
+          email: ADMIN_EMAIL,
+          phone: "9999999999",
+          gender: "male",
+          password: passwordHash,
+          role: "admin",
+          isActive: true,
+          isEmailVerified: true,
+          agreeTerms: true,
+          updatedAt: new Date(),
+        },
+        $setOnInsert: {
+          createdAt: new Date(),
+        },
+      },
+      { upsert: true },
+    );
+
     if (existing) {
-      console.log("✓ Admin user already exists!");
-      console.log("  Email:    admin@techorbit.com");
-      console.log("  Password: Admin@123");
-      process.exit(0);
+      console.log("✓ Admin user already existed and is now updated!");
+    } else {
+      console.log("✓ Admin user created successfully!");
     }
 
-    // Create admin user
-    const admin = await User.create({
-      firstName: "Admin",
-      lastName: "TechOrbit",
-      email: "admin@techorbit.com",
-      phone: "9999999999",
-      gender: "male",
-      password: "Admin@123",
-      role: "admin",
-      isActive: true,
-      agreeTerms: true,
-    });
-
-    console.log("\n✓ Admin user created successfully!");
+    const admin = await User.findOne({ email: ADMIN_EMAIL });
     console.log("  ─────────────────────────────");
-    console.log("  Email:    admin@techorbit.com");
-    console.log("  Password: Admin@123");
+    console.log(`  Email:    ${ADMIN_EMAIL}`);
+    console.log(`  Password: ${ADMIN_PASSWORD}`);
     console.log("  Role:     admin");
     console.log("  ID:       " + admin._id);
     console.log("  ─────────────────────────────\n");
