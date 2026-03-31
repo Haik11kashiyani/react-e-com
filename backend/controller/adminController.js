@@ -4,6 +4,20 @@ import Order from "../models/Order.js";
 import Coupon from "../models/Coupon.js";
 import Review from "../models/Review.js";
 import ContactMessage from "../models/ContactMessage.js";
+import { refreshProductRating } from "../utils/reviewStats.js";
+
+const getRecentMonths = (count = 6) => {
+  const result = [];
+  const now = new Date();
+  for (let i = count - 1; i >= 0; i -= 1) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      label: d.toLocaleString("default", { month: "short" }),
+    });
+  }
+  return result;
+};
 
 // ─── Dashboard Stats ─────────────────────────────────
 export const getDashboardStats = async (req, res) => {
@@ -32,6 +46,89 @@ export const getDashboardStats = async (req, res) => {
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
+    const months = getRecentMonths(6);
+    const startMonth = new Date(months[0].key + "-01T00:00:00.000Z");
+
+    const [monthlyRevenueRaw, monthlyUsersRaw, topProductsRaw] = await Promise.all([
+      Order.aggregate([
+        { $match: { status: { $ne: "cancelled" }, createdAt: { $gte: startMonth } } },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            revenue: { $sum: "$total" },
+            orders: { $sum: 1 },
+          },
+        },
+      ]),
+      User.aggregate([
+        { $match: { createdAt: { $gte: startMonth } } },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            users: { $sum: 1 },
+          },
+        },
+      ]),
+      Order.aggregate([
+        { $match: { status: { $ne: "cancelled" } } },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.product",
+            totalSold: { $sum: "$items.qty" },
+            revenue: { $sum: { $multiply: ["$items.price", "$items.qty"] } },
+          },
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "product",
+          },
+        },
+        { $unwind: "$product" },
+        {
+          $project: {
+            _id: 0,
+            productId: "$product._id",
+            name: "$product.name",
+            totalSold: 1,
+            revenue: 1,
+          },
+        },
+      ]),
+    ]);
+
+    const monthlyMap = new Map(
+      monthlyRevenueRaw.map((m) => [
+        `${m._id.year}-${String(m._id.month).padStart(2, "0")}`,
+        { revenue: m.revenue, orders: m.orders },
+      ]),
+    );
+
+    const usersMap = new Map(
+      monthlyUsersRaw.map((m) => [
+        `${m._id.year}-${String(m._id.month).padStart(2, "0")}`,
+        m.users,
+      ]),
+    );
+
+    const monthlyTrends = months.map((m) => ({
+      month: m.label,
+      revenue: Number((monthlyMap.get(m.key)?.revenue || 0).toFixed(2)),
+      orders: monthlyMap.get(m.key)?.orders || 0,
+      users: usersMap.get(m.key) || 0,
+    }));
+
     res.json({
       success: true,
       stats: {
@@ -43,6 +140,8 @@ export const getDashboardStats = async (req, res) => {
         unreadContacts: totalContacts,
         recentOrders,
         ordersByStatus,
+        monthlyTrends,
+        topProducts: topProductsRaw,
       },
     });
   } catch (error) {
@@ -68,9 +167,34 @@ export const getAllUsers = async (req, res) => {
       User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
       User.countDocuments(filter),
     ]);
+
+    const userIds = users.map((u) => u._id);
+    const orderAgg = await Order.aggregate([
+      { $match: { user: { $in: userIds }, status: { $ne: "cancelled" } } },
+      {
+        $group: {
+          _id: "$user",
+          totalOrders: { $sum: 1 },
+          totalSpent: { $sum: "$total" },
+          lastOrderAt: { $max: "$createdAt" },
+        },
+      },
+    ]);
+
+    const orderMap = new Map(orderAgg.map((o) => [String(o._id), o]));
+    const usersWithStats = users.map((u) => {
+      const stats = orderMap.get(String(u._id));
+      return {
+        ...u.toObject(),
+        totalOrders: stats?.totalOrders || 0,
+        totalSpent: Number((stats?.totalSpent || 0).toFixed(2)),
+        lastOrderAt: stats?.lastOrderAt || null,
+      };
+    });
+
     res.json({
       success: true,
-      users,
+      users: usersWithStats,
       pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) },
     });
   } catch (error) {
@@ -222,6 +346,7 @@ export const deleteReview = async (req, res) => {
   try {
     const review = await Review.findByIdAndDelete(req.params.id);
     if (!review) return res.status(404).json({ success: false, message: "Review not found" });
+    await refreshProductRating(review.productId);
     res.json({ success: true, message: "Review deleted" });
   } catch (error) {
     console.error("deleteReview error:", error);

@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import { validateCouponForUser } from "../utils/couponEngine.js";
 
 // POST /api/orders
 export const createOrder = async (req, res) => {
@@ -9,15 +10,35 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "No order items" });
     }
 
+    let normalizedDiscount = Number(discount || 0);
+    let normalizedShipping = Number(shipping || 0);
+
+    if (couponCode) {
+      const result = await validateCouponForUser({
+        code: couponCode,
+        subtotal: Number(subtotal),
+        userId: req.user._id,
+      });
+
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+
+      normalizedDiscount = result.discount;
+      if (result.coupon.type === "shipping") {
+        normalizedShipping = 0;
+      }
+    }
+
     const order = await Order.create({
       user: req.user._id,
       items,
       shippingAddress,
       paymentMethod,
       subtotal,
-      discount,
+      discount: normalizedDiscount,
       couponCode,
-      shipping,
+      shipping: normalizedShipping,
       total,
     });
 

@@ -23,6 +23,31 @@ const couponSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    minSubtotal: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    maxDiscount: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    firstOrderOnly: {
+      type: Boolean,
+      default: false,
+    },
+    usageLimitPerUser: {
+      type: Number,
+      default: null,
+      min: 1,
+    },
+    usageLimitTotal: {
+      type: Number,
+      default: null,
+      min: 1,
+    },
+    startsAt: Date,
     isActive: {
       type: Boolean,
       default: true,

@@ -9,6 +9,8 @@ import {
   deleteProduct,
 } from "../controller/productController.js";
 import auth from "../middleware/auth.js";
+import adminAuth from "../middleware/adminAuth.js";
+import { uploadProductImage } from "../config/multer.js";
 
 const router = express.Router();
 
@@ -19,8 +21,8 @@ router.get("/:id", getProductById);
 router.get("/:id/related", getRelatedProducts);
 
 // Admin (protected)
-router.post("/", auth, createProduct);
-router.put("/:id", auth, updateProduct);
-router.delete("/:id", auth, deleteProduct);
+router.post("/", auth, adminAuth, uploadProductImage.single("imageFile"), createProduct);
+router.put("/:id", auth, adminAuth, uploadProductImage.single("imageFile"), updateProduct);
+router.delete("/:id", auth, adminAuth, deleteProduct);
 
 export default router;

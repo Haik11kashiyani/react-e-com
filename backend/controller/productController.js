@@ -1,5 +1,48 @@
 import Product from "../models/Product.js";
 
+const parseArrayField = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    } catch {
+      return trimmed
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+  }
+  return [];
+};
+
+const normalizeProductPayload = (req) => {
+  const body = { ...req.body };
+  body.price = Number(body.price);
+  if (body.originalPrice !== undefined && body.originalPrice !== "") {
+    body.originalPrice = Number(body.originalPrice);
+  } else {
+    delete body.originalPrice;
+  }
+
+  if (typeof body.inStock === "string") {
+    body.inStock = body.inStock === "true";
+  }
+
+  body.features = parseArrayField(body.features);
+  body.colors = parseArrayField(body.colors);
+  body.images = parseArrayField(body.images);
+
+  if (req.file) {
+    const relativePath = req.file.path.replace(/\\/g, "/");
+    body.image = `${req.protocol}://${req.get("host")}/${relativePath}`;
+  }
+
+  return body;
+};
+
 // GET /api/products
 export const getProducts = async (req, res) => {
   try {
@@ -96,7 +139,8 @@ export const getCategories = async (req, res) => {
 // POST /api/products (admin)
 export const createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    const payload = normalizeProductPayload(req);
+    const product = await Product.create(payload);
     res.status(201).json({ success: true, product });
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -113,7 +157,8 @@ export const createProduct = async (req, res) => {
 // PUT /api/products/:id (admin)
 export const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const payload = normalizeProductPayload(req);
+    const product = await Product.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     });
