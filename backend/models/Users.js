@@ -70,6 +70,30 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationOtpHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    emailVerificationOtpExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+    resetPasswordOtpHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    resetPasswordOtpExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

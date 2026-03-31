@@ -67,7 +67,18 @@ const Login = () => {
             navigate('/');
           }
         })
-        .catch((err) => setServerError(err.response?.data?.message || 'Login failed'))
+        .catch((err) => {
+          if (err.response?.data?.requiresVerification) {
+            navigate('/verify-email', {
+              state: {
+                email: err.response?.data?.email || formData.email,
+              },
+            });
+            return;
+          }
+
+          setServerError(err.response?.data?.message || 'Login failed');
+        })
         .finally(() => setLoading(false));
     }
   };

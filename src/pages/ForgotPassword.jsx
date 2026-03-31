@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, CheckCircle, KeyRound } from 'lucide-react';
-import { validateEmail } from '../utils/validation';
+import { validateEmail, validatePassword, validateConfirmPassword } from '../utils/validation';
+import {
+  requestPasswordResetOtp,
+  verifyPasswordResetOtp,
+  resetPasswordWithOtp,
+} from '../utils/api';
 import { FadeIn } from '../components/common/AnimatedComponents';
 import './Auth.css';
 
@@ -13,48 +18,88 @@ export default function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     const emailError = validateEmail(email);
     if (emailError) {
       setErrors({ email: emailError });
       return;
     }
+
     setErrors({});
+    setServerError('');
+    setSuccessMessage('');
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const res = await requestPasswordResetOtp({ email });
+      setSuccessMessage(res.data?.message || 'OTP sent successfully');
       setStep(2);
-    }, 1500);
+    } catch (err) {
+      setServerError(err.response?.data?.message || 'Failed to send reset OTP');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCodeSubmit = (e) => {
+  const handleCodeSubmit = async (e) => {
     e.preventDefault();
     if (code.length < 6) {
       setErrors({ code: 'Please enter the 6-digit code' });
       return;
     }
+
     setErrors({});
-    setStep(3);
+    setServerError('');
+    setSuccessMessage('');
+    setLoading(true);
+
+    try {
+      const res = await verifyPasswordResetOtp({ email, otp: code });
+      setSuccessMessage(res.data?.message || 'OTP verified successfully');
+      setStep(3);
+    } catch (err) {
+      setServerError(err.response?.data?.message || 'Invalid or expired OTP');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
-    if (newPassword.length < 8) errs.newPassword = 'Password must be at least 8 characters';
-    if (newPassword !== confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    const passwordError = validatePassword(newPassword);
+    const confirmError = validateConfirmPassword(newPassword, confirmPassword);
+
+    if (passwordError) errs.newPassword = passwordError;
+    if (confirmError) errs.confirmPassword = confirmError;
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
+
     setErrors({});
+    setServerError('');
+    setSuccessMessage('');
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const res = await resetPasswordWithOtp({
+        email,
+        otp: code,
+        newPassword,
+      });
+      setSuccessMessage(res.data?.message || 'Password reset successful');
       setStep(4);
-    }, 1500);
+    } catch (err) {
+      setServerError(err.response?.data?.message || 'Failed to reset password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,6 +112,10 @@ export default function ForgotPassword() {
             </div>
             <h2 className="auth-title">Forgot Password?</h2>
             <p className="auth-subtitle">Enter your email address and we'll send you a verification code to reset your password.</p>
+
+            {serverError && <p className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>{serverError}</p>}
+            {successMessage && <p style={{ color: '#047857', textAlign: 'center', marginBottom: '1rem' }}>{successMessage}</p>}
+
             <form onSubmit={handleEmailSubmit} className="auth-form">
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
@@ -101,6 +150,10 @@ export default function ForgotPassword() {
             </div>
             <h2 className="auth-title">Enter Code</h2>
             <p className="auth-subtitle">We've sent a 6-digit verification code to <strong>{email}</strong></p>
+
+            {serverError && <p className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>{serverError}</p>}
+            {successMessage && <p style={{ color: '#047857', textAlign: 'center', marginBottom: '1rem' }}>{successMessage}</p>}
+
             <form onSubmit={handleCodeSubmit} className="auth-form">
               <div className="form-group">
                 <label htmlFor="code">Verification Code</label>
@@ -116,9 +169,9 @@ export default function ForgotPassword() {
                 />
                 {errors.code && <span className="error-message">{errors.code}</span>}
               </div>
-              <button type="submit" className="btn-auth">Verify Code</button>
+              <button type="submit" className="btn-auth" disabled={loading}>{loading ? 'Verifying...' : 'Verify Code'}</button>
               <div className="auth-footer">
-                <p>Didn't receive the code? <button type="button" className="link-btn" onClick={() => { setStep(1); }}>Resend</button></p>
+                <p>Didn't receive the code? <button type="button" className="link-btn" onClick={handleEmailSubmit}>Resend</button></p>
               </div>
             </form>
           </FadeIn>
@@ -131,6 +184,10 @@ export default function ForgotPassword() {
             </div>
             <h2 className="auth-title">New Password</h2>
             <p className="auth-subtitle">Create a strong password for your account.</p>
+
+            {serverError && <p className="error-message" style={{ textAlign: 'center', marginBottom: '1rem' }}>{serverError}</p>}
+            {successMessage && <p style={{ color: '#047857', textAlign: 'center', marginBottom: '1rem' }}>{successMessage}</p>}
+
             <form onSubmit={handlePasswordSubmit} className="auth-form">
               <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
@@ -170,7 +227,7 @@ export default function ForgotPassword() {
                 <CheckCircle size={48} />
               </div>
               <h2 className="auth-title">Password Reset!</h2>
-              <p className="auth-subtitle">Your password has been successfully reset. You can now log in with your new credentials.</p>
+              <p className="auth-subtitle">{successMessage || 'Your password has been successfully reset. You can now log in with your new credentials.'}</p>
               <Link to="/login" className="btn-auth" style={{ display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>
                 Go to Login
               </Link>

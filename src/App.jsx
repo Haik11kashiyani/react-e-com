@@ -40,6 +40,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsConditions = lazy(() => import('./pages/TermsConditions'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
 
 // Lazy-loaded admin
 const AdminLayout = lazy(() => import('./admin/AdminLayout'))
@@ -63,7 +64,11 @@ const SuspenseWrap = ({ children, fallback }) => (
 
 function App() {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/forgot-password';
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/signup' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/verify-email';
   const isAdminPage = location.pathname.startsWith('/admin');
 
   return (
@@ -100,6 +105,7 @@ function App() {
             <Route path="/login" element={<PageTransition><SuspenseWrap><Login /></SuspenseWrap></PageTransition>} />
             <Route path="/signup" element={<PageTransition><SuspenseWrap><Signup /></SuspenseWrap></PageTransition>} />
             <Route path="/forgot-password" element={<PageTransition><SuspenseWrap><ForgotPassword /></SuspenseWrap></PageTransition>} />
+            <Route path="/verify-email" element={<PageTransition><SuspenseWrap><VerifyEmail /></SuspenseWrap></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><SuspenseWrap><PrivacyPolicy /></SuspenseWrap></PageTransition>} />
             <Route path="/terms-conditions" element={<PageTransition><SuspenseWrap><TermsConditions /></SuspenseWrap></PageTransition>} />
 

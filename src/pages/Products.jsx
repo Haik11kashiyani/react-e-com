@@ -7,7 +7,6 @@ import {
   ChevronRight, TrendingUp, Sparkles, LayoutGrid, Columns3,
   Package, Clock, BadgeCheck
 } from 'lucide-react';
-import { allProducts as staticProducts, categories } from '../data/products';
 import { fetchProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
 import { SplitText, FadeIn, StaggerContainer, RevealText } from '../components/common/AnimatedComponents';
@@ -36,20 +35,27 @@ export default function Products() {
   const [sortBy, setSortBy] = useState('featured');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
-  const [allProducts, setAllProducts] = useState(staticProducts);
+  const [allProducts, setAllProducts] = useState([]);
   const heroRef = useRef(null);
 
   useEffect(() => {
     fetchProducts()
       .then((res) => {
-        if (res.data.products?.length) setAllProducts(res.data.products);
+        setAllProducts(res.data.products || []);
       })
-      .catch(() => { /* fallback to static data */ });
+      .catch(() => {
+        setAllProducts([]);
+      });
   }, []);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
+
+  const categoryOptions = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category).filter(Boolean)));
+    return [{ id: 'all', name: 'All Products' }, ...uniqueCategories.map((c) => ({ id: c, name: c.charAt(0).toUpperCase() + c.slice(1) }))];
+  }, [allProducts]);
 
   const filteredProducts = useMemo(() => {
     let products = activeCategory === 'all'
@@ -75,7 +81,7 @@ export default function Products() {
     }
 
     return products;
-  }, [activeCategory, sortBy, searchQuery]);
+  }, [allProducts, activeCategory, sortBy, searchQuery]);
 
   const topPicks = allProducts.filter(p => p.rating >= 4.7).slice(0, 5);
 
@@ -258,7 +264,7 @@ export default function Products() {
 
           {/* Categories */}
           <div className="products-categories">
-            {categories.map((cat) => (
+            {categoryOptions.map((cat) => (
               <button
                 key={cat.id}
                 className={`cat-pill ${activeCategory === cat.id ? 'active' : ''}`}

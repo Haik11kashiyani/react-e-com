@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AuthContext from './AuthContext';
-import { loginUser, registerUser, getMe } from '../utils/api';
+import {
+  loginUser,
+  registerUser,
+  getMe,
+  verifyEmailOtp,
+  resendEmailOtp,
+} from '../utils/api';
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -35,18 +41,40 @@ export default function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const res = await loginUser({ email, password });
     const { token, user: userData } = res.data;
-    localStorage.setItem('techorbit_token', token);
-    localStorage.setItem('techorbit_user', JSON.stringify(userData));
-    setUser(userData);
+    if (token && userData) {
+      localStorage.setItem('techorbit_token', token);
+      localStorage.setItem('techorbit_user', JSON.stringify(userData));
+      setUser(userData);
+    }
     return res.data;
   }, []);
 
   const register = useCallback(async (formData) => {
     const res = await registerUser(formData);
     const { token, user: userData } = res.data;
-    localStorage.setItem('techorbit_token', token);
-    localStorage.setItem('techorbit_user', JSON.stringify(userData));
-    setUser(userData);
+    if (token && userData) {
+      localStorage.setItem('techorbit_token', token);
+      localStorage.setItem('techorbit_user', JSON.stringify(userData));
+      setUser(userData);
+    }
+    return res.data;
+  }, []);
+
+  const verifyOtpAndLogin = useCallback(async (email, otp) => {
+    const res = await verifyEmailOtp({ email, otp });
+    const { token, user: userData } = res.data;
+
+    if (token && userData) {
+      localStorage.setItem('techorbit_token', token);
+      localStorage.setItem('techorbit_user', JSON.stringify(userData));
+      setUser(userData);
+    }
+
+    return res.data;
+  }, []);
+
+  const resendVerificationOtp = useCallback(async (email) => {
+    const res = await resendEmailOtp({ email });
     return res.data;
   }, []);
 
@@ -57,7 +85,18 @@ export default function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        verifyOtpAndLogin,
+        resendVerificationOtp,
+        logout,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -4,54 +4,23 @@ import { Star, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
 import { fetchTestimonials } from '../utils/api';
 import './Testimonials.css';
 
-const staticTestimonials = [
-  {
-    name: 'Sarah Chen',
-    role: 'Creative Director',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop',
-    text: 'Techorbit completely changed how I shop for tech. The curation is impeccable — every product feels like it was picked just for me. The MacBook Pro arrived in pristine packaging within 24 hours.',
-    rating: 5,
-    product: 'MacBook Pro 16"',
-  },
-  {
-    name: 'Marcus Johnson',
-    role: 'Software Engineer',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop',
-    text: 'I was skeptical at first, but the quality of service blew me away. The product comparison tool helped me pick the perfect phone. 10/10 would recommend to anyone looking for premium tech.',
-    rating: 5,
-    product: 'Galaxy S24 Ultra',
-  },
-  {
-    name: 'Emily Rivera',
-    role: 'Product Designer',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop',
-    text: 'The attention to detail is remarkable — from the website experience to the unboxing. It feels like shopping at a luxury boutique but for tech. My AirPods Pro arrived perfectly.',
-    rating: 5,
-    product: 'AirPods Pro 2',
-  },
-  {
-    name: 'Alex Kim',
-    role: 'Entrepreneur',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop',
-    text: 'Best tech shopping experience I have ever had. The 2-year warranty and free shipping on all my orders makes it a no-brainer. The support team is incredibly responsive and helpful.',
-    rating: 5,
-    product: 'iPad Pro 12.9"',
-  },
-];
-
 function Testimonials() {
   const [active, setActive] = useState(0);
-  const [testimonials, setTestimonials] = useState(staticTestimonials);
+  const [testimonials, setTestimonials] = useState([]);
 
   useEffect(() => {
     fetchTestimonials()
       .then((res) => {
-        if (res.data.testimonials?.length) setTestimonials(res.data.testimonials);
+        setTestimonials(res.data.testimonials || []);
+        setActive(0);
       })
-      .catch(() => { /* keep static */ });
+      .catch(() => {
+        setTestimonials([]);
+      });
   }, []);
 
   useEffect(() => {
+    if (testimonials.length <= 1) return undefined;
     const iv = setInterval(() => setActive((p) => (p + 1) % testimonials.length), 6000);
     return () => clearInterval(iv);
   }, [testimonials.length]);
@@ -59,6 +28,10 @@ function Testimonials() {
   const prev = () => setActive((p) => (p - 1 + testimonials.length) % testimonials.length);
   const next = () => setActive((p) => (p + 1) % testimonials.length);
   const t = testimonials[active];
+
+  if (!t) {
+    return null;
+  }
 
   return (
     <section className="tm-section">

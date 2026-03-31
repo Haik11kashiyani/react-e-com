@@ -80,7 +80,13 @@ const Signup = () => {
         gender: formData.gender,
         password: formData.password,
       })
-        .then(() => navigate('/'))
+        .then((data) => {
+          if (data.requiresVerification) {
+            navigate('/verify-email', { state: { email: data.email || formData.email } });
+            return;
+          }
+          navigate('/');
+        })
         .catch((err) => setServerError(err.response?.data?.message || 'Registration failed'))
         .finally(() => setLoading(false));
     }

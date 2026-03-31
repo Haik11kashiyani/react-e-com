@@ -55,6 +55,11 @@ export const fetchCategories = () => api.get('/products/categories');
 // ─── Auth ────────────────────────────────────────────
 export const registerUser = (data) => api.post('/auth/register', data);
 export const loginUser = (data) => api.post('/auth/login', data);
+export const verifyEmailOtp = (data) => api.post('/auth/verify-email-otp', data);
+export const resendEmailOtp = (data) => api.post('/auth/resend-email-otp', data);
+export const requestPasswordResetOtp = (data) => api.post('/auth/forgot-password/request-otp', data);
+export const verifyPasswordResetOtp = (data) => api.post('/auth/forgot-password/verify-otp', data);
+export const resetPasswordWithOtp = (data) => api.post('/auth/forgot-password/reset', data);
 export const getMe = () => api.get('/auth/me');
 export const updateProfile = (data) => api.put('/auth/profile', data);
 

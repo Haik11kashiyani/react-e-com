@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { ArrowRight, ShoppingCart, Star, Sparkles, Heart } from 'lucide-react';
-import { allProducts as staticProducts } from '../data/products';
 import { fetchProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
 import LazyImage from './common/LazyImage';
@@ -12,18 +11,21 @@ const VISIBLE = 4;
 
 function FeaturedProducts() {
   const [page, setPage] = useState(0);
-  const [featured, setFeatured] = useState(staticProducts.slice(0, 8));
+  const [featured, setFeatured] = useState([]);
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
   useEffect(() => {
     fetchProducts({ limit: 8 })
       .then((res) => {
-        if (res.data.products?.length) setFeatured(res.data.products.slice(0, 8));
+        setFeatured(res.data.products?.slice(0, 8) || []);
+        setPage(0);
       })
-      .catch(() => { /* keep static */ });
+      .catch(() => {
+        setFeatured([]);
+      });
   }, []);
 
-  const totalPages = Math.ceil(featured.length / VISIBLE);
+  const totalPages = Math.max(1, Math.ceil(featured.length / VISIBLE));
 
   useEffect(() => {
     const iv = setInterval(() => setPage((p) => (p + 1) % totalPages), 7000);
@@ -91,7 +93,9 @@ function FeaturedProducts() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.4 }}
           >
-            {visible.map((product, i) => (
+            {visible.length === 0 ? (
+              <div className="fp-empty">No featured products available.</div>
+            ) : visible.map((product, i) => (
               <motion.div
                 key={product.id}
                 className="fp-card"

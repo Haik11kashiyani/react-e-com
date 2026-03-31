@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { ArrowRight, Sparkles, ShoppingBag, Star, Zap, Shield, Truck } from 'lucide-react';
-import { allProducts as staticProducts } from '../data/products';
 import { fetchProducts } from '../utils/api';
 import './heroSec.css';
 
@@ -21,7 +20,7 @@ const badges = [
 
 function HeroSec() {
   const [activeProduct, setActiveProduct] = useState(0);
-  const [heroProducts, setHeroProducts] = useState(staticProducts.slice(0, 4));
+  const [heroProducts, setHeroProducts] = useState([]);
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end start'] });
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -120]);
@@ -31,17 +30,21 @@ function HeroSec() {
   useEffect(() => {
     fetchProducts({ limit: 4 })
       .then((res) => {
-        if (res.data.products?.length) setHeroProducts(res.data.products.slice(0, 4));
+        setHeroProducts(res.data.products?.slice(0, 4) || []);
+        setActiveProduct(0);
       })
-      .catch(() => { /* keep static */ });
+      .catch(() => {
+        setHeroProducts([]);
+      });
   }, []);
 
   useEffect(() => {
+    if (heroProducts.length <= 1) return undefined;
     const iv = setInterval(() => setActiveProduct((p) => (p + 1) % heroProducts.length), 4000);
     return () => clearInterval(iv);
   }, [heroProducts.length]);
 
-  const current = heroProducts[activeProduct];
+  const current = heroProducts[activeProduct] || null;
 
   return (
     <div className="hero-wrap" ref={containerRef}>
@@ -146,30 +149,44 @@ function HeroSec() {
               <div className="hero-ring hero-ring--2" />
 
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeProduct}
-                  className="hero-product-card"
-                  initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                >
-                  <div className="hero-product-img">
-                    <img src={current.image} alt={current.name} />
-                    <span className="hero-product-tag">{current.tag}</span>
-                  </div>
-                  <div className="hero-product-info">
-                    <span className="hero-product-brand">{current.brand}</span>
-                    <h3 className="hero-product-name">{current.name}</h3>
-                    <div className="hero-product-meta">
-                      <div className="hero-product-rating">
-                        <Star size={13} fill="#FFB800" stroke="#FFB800" />
-                        <span>{current.rating}</span>
-                      </div>
-                      <span className="hero-product-price">${current.price.toLocaleString()}</span>
+                {current ? (
+                  <motion.div
+                    key={activeProduct}
+                    className="hero-product-card"
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
+                    <div className="hero-product-img">
+                      <img src={current.image} alt={current.name} />
+                      <span className="hero-product-tag">{current.tag || 'Featured'}</span>
                     </div>
-                  </div>
-                </motion.div>
+                    <div className="hero-product-info">
+                      <span className="hero-product-brand">{current.brand}</span>
+                      <h3 className="hero-product-name">{current.name}</h3>
+                      <div className="hero-product-meta">
+                        <div className="hero-product-rating">
+                          <Star size={13} fill="#FFB800" stroke="#FFB800" />
+                          <span>{current.rating}</span>
+                        </div>
+                        <span className="hero-product-price">${Number(current.price || 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="hero-empty"
+                    className="hero-product-card"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="hero-product-info">
+                      <h3 className="hero-product-name">Loading featured products...</h3>
+                    </div>
+                  </motion.div>
+                )}
               </AnimatePresence>
 
               <div className="hero-dots">

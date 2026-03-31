@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, Star, ArrowLeft } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
-import { allProducts as staticProducts } from '../data/products';
 import { fetchProducts } from '../utils/api';
 import { SplitText, FadeIn, StaggerContainer } from '../components/common/AnimatedComponents';
 import { staggerItem } from '../components/common/animationVariants';
@@ -12,14 +11,16 @@ import './Wishlist.css';
 
 export default function Wishlist() {
   const { addToCart, wishlist, toggleWishlist } = useCart();
-  const [allProducts, setAllProducts] = React.useState(staticProducts);
+  const [allProducts, setAllProducts] = React.useState([]);
 
   React.useEffect(() => {
     fetchProducts()
       .then((res) => {
-        if (res.data.products?.length) setAllProducts(res.data.products);
+        setAllProducts(res.data.products || []);
       })
-      .catch(() => {});
+      .catch(() => {
+        setAllProducts([]);
+      });
   }, []);
 
   const wishItems = allProducts.filter((p) => wishlist.includes(p._id || p.id));

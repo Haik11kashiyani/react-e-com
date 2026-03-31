@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div/img
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ChevronLeft, Minus, Plus, ArrowUpRight, Sparkles, CheckCircle } from 'lucide-react';
-import { getProductById as getStaticProduct, getRelatedProducts as getStaticRelated } from '../data/products';
 import { fetchProductById, fetchRelatedProducts } from '../utils/api';
 import { useCart } from '../hooks/useCart';
 import { FadeIn, SplitText, RevealText, ScaleIn } from '../components/common/AnimatedComponents';
@@ -20,38 +19,69 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
   const [activeTab, setActiveTab] = useState('features');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    // Try API first, fall back to static
-    fetchProductById(id)
-      .then((res) => {
-        if (!cancelled && res.data.product) {
-          setProduct(res.data.product);
-          return fetchRelatedProducts(id);
+    setLoading(true);
+    setError('');
+
+    Promise.all([fetchProductById(id), fetchRelatedProducts(id)])
+      .then(([productRes, relatedRes]) => {
+        if (cancelled) return;
+
+        const nextProduct = productRes.data?.product;
+        if (!nextProduct) {
+          navigate('/products');
+          return;
         }
-      })
-      .then((res) => {
-        if (!cancelled && res?.data?.products) setRelated(res.data.products);
+
+        setProduct(nextProduct);
+        setRelated(relatedRes.data?.products || []);
       })
       .catch(() => {
-        // Fallback to static data
-        const p = getStaticProduct(id);
-        if (!p) { navigate('/products'); return; }
         if (!cancelled) {
-          setProduct(p);
-          setRelated(getStaticRelated(id));
+          setError('Unable to load product right now.');
+          setProduct(null);
+          setRelated([]);
         }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
+
     setSelectedImage(0);
     setQty(1);
     setSelectedColor(0);
     return () => { cancelled = true; };
   }, [id, navigate]);
 
-  if (!product) return <SkeletonPD />;
+  if (loading) return <SkeletonPD />;
+  if (error || !product) {
+    return (
+      <div className="pd-page">
+        <div className="pd-breadcrumb">
+          <Link to="/products">Back to Products</Link>
+        </div>
+        <section className="pd-main">
+          <div className="pd-info">
+            <h1 className="pd-info__name">{error || 'Product not found'}</h1>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const galleryImages = product.images?.length ? product.images : [product.image].filter(Boolean);
+  const productFeatures = product.features || [];
+  const productColors = product.colors || [];
+  const originalPrice = product.originalPrice || product.price || 0;
+  const price = product.price || 0;
+
+  const discount = originalPrice > 0
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
 
   return (
     <div className="pd-page">
@@ -72,7 +102,7 @@ export default function ProductDetail() {
         <div className="pd-gallery">
           <FadeIn delay={0.1} direction="left">
             <div className="pd-gallery__thumbs">
-              {product.images.map((img, i) => (
+              {galleryImages.map((img, i) => (
                 <button
                   key={i}
                   className={`pd-thumb ${selectedImage === i ? 'active' : ''}`}
@@ -88,7 +118,7 @@ export default function ProductDetail() {
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedImage}
-                  src={product.images[selectedImage]}
+                  src={galleryImages[selectedImage]}
                   alt={product.name}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -96,7 +126,7 @@ export default function ProductDetail() {
                   transition={{ duration: 0.4 }}
                 />
               </AnimatePresence>
-              <span className="pd-discount-badge">-{discount}%</span>
+              {discount > 0 && <span className="pd-discount-badge">-{discount}%</span>}
             </div>
           </ScaleIn>
         </div>
@@ -125,9 +155,9 @@ export default function ProductDetail() {
 
           <FadeIn delay={0.4}>
             <div className="pd-info__price">
-              <span className="pd-price">${product.price.toLocaleString()}</span>
-              <span className="pd-old-price">${product.originalPrice.toLocaleString()}</span>
-              <span className="pd-save">Save ${(product.originalPrice - product.price).toLocaleString()}</span>
+              <span className="pd-price">${price.toLocaleString()}</span>
+              {originalPrice > price && <span className="pd-old-price">${originalPrice.toLocaleString()}</span>}
+              {originalPrice > price && <span className="pd-save">Save ${(originalPrice - price).toLocaleString()}</span>}
             </div>
           </FadeIn>
 
@@ -136,12 +166,12 @@ export default function ProductDetail() {
           </FadeIn>
 
           {/* Colors */}
-          {product.colors && product.colors.length > 1 && (
+          {productColors.length > 1 && (
             <FadeIn delay={0.5}>
               <div className="pd-info__colors">
                 <span className="pd-label">Color</span>
                 <div className="pd-color-swatches">
-                  {product.colors.map((color, i) => (
+                  {productColors.map((color, i) => (
                     <button
                       key={i}
                       className={`pd-swatch ${selectedColor === i ? 'active' : ''}`}
@@ -227,7 +257,7 @@ export default function ProductDetail() {
           >
             {activeTab === 'features' && (
               <div className="pd-features-grid">
-                {product.features.map((f, i) => (
+                {productFeatures.map((f, i) => (
                   <div key={i} className="pd-feature-item">
                     <span className="pd-feature-bullet"><Sparkles size={14} /></span>
                     <span>{f}</span>
@@ -241,7 +271,7 @@ export default function ProductDetail() {
                 <div className="pd-spec-row"><span>Category</span><span style={{textTransform:'capitalize'}}>{product.category}</span></div>
                 <div className="pd-spec-row"><span>Rating</span><span>{product.rating} / 5</span></div>
                 <div className="pd-spec-row"><span>In Stock</span><span>{product.inStock ? 'Yes' : 'No'}</span></div>
-                {product.features.map((f, i) => (
+                {productFeatures.map((f, i) => (
                   <div key={i} className="pd-spec-row"><span>Feature {i+1}</span><span>{f}</span></div>
                 ))}
               </div>
