@@ -19,6 +19,7 @@ const AdminProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyProduct);
+  const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -44,6 +45,7 @@ const AdminProducts = () => {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyProduct);
+    setImageFile(null);
     setModalOpen(true);
   };
 
@@ -56,23 +58,36 @@ const AdminProducts = () => {
       inStock: p.inStock !== false, features: (p.features || []).join(', '),
       colors: (p.colors || []).join(', '),
     });
+    setImageFile(null);
     setModalOpen(true);
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.brand || !form.price || !form.image || !form.description) {
+    if (!form.name || !form.brand || !form.price || (!form.image && !imageFile) || !form.description) {
       showToast('Please fill all required fields', 'error');
       return;
     }
     setSaving(true);
     try {
-      const payload = {
+      const normalizedPayload = {
         ...form,
         price: Number(form.price),
         originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
         features: form.features ? form.features.split(',').map(s => s.trim()).filter(Boolean) : [],
         colors: form.colors ? form.colors.split(',').map(s => s.trim()).filter(Boolean) : [],
       };
+
+      let payload = normalizedPayload;
+      if (imageFile) {
+        payload = new FormData();
+        Object.entries(normalizedPayload).forEach(([k, v]) => {
+          if (v !== undefined && v !== null) {
+            payload.append(k, Array.isArray(v) ? JSON.stringify(v) : String(v));
+          }
+        });
+        payload.append('imageFile', imageFile);
+      }
+
       if (editing) {
         await adminUpdateProduct(editing._id, payload);
         showToast('Product updated!');
@@ -206,6 +221,15 @@ const AdminProducts = () => {
               <div className="admin-form-group">
                 <label>Image URL *</label>
                 <input value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} />
+              </div>
+              <div className="admin-form-group">
+                <label>Or Upload Local Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setImageFile(e.target.files?.[0] || null)}
+                />
+                {imageFile && <small style={{ color: '#6b7280' }}>Selected: {imageFile.name}</small>}
               </div>
               <div className="admin-form-group">
                 <label>Description *</label>

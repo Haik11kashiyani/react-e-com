@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Package, ShoppingCart, DollarSign, TrendingUp, Star } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Users, Package, ShoppingCart, DollarSign, TrendingUp, Star, MessageCircle, BarChart3 } from 'lucide-react';
 import { fetchAdminStats } from '../../utils/api';
 import { SkeletonDashboard } from '../../components/common/SkeletonLoader';
 import '../admin.css';
@@ -10,10 +10,15 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAdminStats()
-      .then(res => setStats(res.data.stats))
-      .catch(err => console.error('Dashboard stats error:', err))
+      .then((res) => setStats(res.data.stats))
+      .catch((err) => console.error('Dashboard stats error:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  const maxRevenue = useMemo(() => {
+    const list = stats?.monthlyTrends || [];
+    return Math.max(1, ...list.map((t) => t.revenue || 0));
+  }, [stats]);
 
   if (loading) return <SkeletonDashboard />;
 
@@ -22,15 +27,9 @@ const AdminDashboard = () => {
     { label: 'Products', value: stats?.totalProducts || 0, icon: Package, color: 'green' },
     { label: 'Total Orders', value: stats?.totalOrders || 0, icon: ShoppingCart, color: 'orange' },
     { label: 'Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'blue' },
+    { label: 'Total Reviews', value: stats?.totalReviews || 0, icon: Star, color: 'orange' },
+    { label: 'Unread Messages', value: stats?.unreadContacts || 0, icon: MessageCircle, color: 'red' },
   ];
-
-  const statusColors = {
-    pending: 'pending',
-    confirmed: 'confirmed',
-    shipped: 'shipped',
-    delivered: 'delivered',
-    cancelled: 'cancelled',
-  };
 
   return (
     <div>
@@ -38,11 +37,11 @@ const AdminDashboard = () => {
         <h1 className="admin-page-title">Dashboard</h1>
       </div>
 
-      <div className="admin-stats-grid">
-        {statCards.map(({ label, value, icon: Icon, color }) => (
+      <div className="admin-stats-grid admin-stats-grid-wide">
+        {statCards.map(({ label, value, icon, color }) => (
           <div className="admin-stat-card" key={label}>
             <div className={`admin-stat-icon ${color}`}>
-              <Icon size={24} />
+              {React.createElement(icon, { size: 22 })}
             </div>
             <div className="admin-stat-info">
               <h3>{value}</h3>
@@ -52,25 +51,62 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Order status breakdown */}
-      {stats?.ordersByStatus && stats.ordersByStatus.length > 0 && (
-        <div className="admin-stats-grid" style={{ marginBottom: 28 }}>
-          {stats.ordersByStatus.map(({ _id, count }) => (
-            <div className="admin-stat-card" key={_id}>
-              <div className={`admin-stat-icon ${statusColors[_id] === 'delivered' ? 'green' : _id === 'pending' ? 'orange' : 'purple'}`}>
-                <TrendingUp size={20} />
+      <div className="admin-dashboard-grid">
+        <div className="admin-table-wrap">
+          <div className="admin-table-toolbar">
+            <strong style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BarChart3 size={16} /> Monthly Revenue Trend
+            </strong>
+          </div>
+          <div className="admin-chart-box">
+            {(stats?.monthlyTrends || []).map((point) => (
+              <div key={point.month} className="admin-chart-col">
+                <div className="admin-chart-col__bar-wrap">
+                  <div
+                    className="admin-chart-col__bar"
+                    style={{ height: `${Math.max(6, ((point.revenue || 0) / maxRevenue) * 160)}px` }}
+                    title={`₹${Number(point.revenue || 0).toLocaleString()}`}
+                  />
+                </div>
+                <div className="admin-chart-col__meta">
+                  <span>{point.month}</span>
+                  <small>₹{Math.round(point.revenue || 0).toLocaleString()}</small>
+                </div>
               </div>
-              <div className="admin-stat-info">
-                <h3>{count}</h3>
-                <p style={{ textTransform: 'capitalize' }}>{_id} Orders</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      )}
 
-      {/* Recent orders */}
-      <div className="admin-table-wrap">
+        <div className="admin-table-wrap">
+          <div className="admin-table-toolbar">
+            <strong style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <TrendingUp size={16} /> Top Selling Products
+            </strong>
+          </div>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Units Sold</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats?.topProducts?.length ? stats.topProducts.map((p) => (
+                <tr key={p.productId}>
+                  <td>{p.name}</td>
+                  <td>{p.totalSold}</td>
+                  <td>₹{Math.round(p.revenue || 0).toLocaleString()}</td>
+                </tr>
+              )) : (
+                <tr><td colSpan={3} className="admin-empty"><p>No product sales data yet</p></td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="admin-table-wrap" style={{ marginTop: 24 }}>
         <div className="admin-table-toolbar">
           <strong style={{ fontSize: 14 }}>Recent Orders</strong>
         </div>
@@ -85,7 +121,7 @@ const AdminDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {stats?.recentOrders?.length ? stats.recentOrders.map(order => (
+            {stats?.recentOrders?.length ? stats.recentOrders.map((order) => (
               <tr key={order._id}>
                 <td style={{ fontFamily: 'monospace', fontSize: 12 }}>#{order._id.slice(-6)}</td>
                 <td>{order.user?.firstName} {order.user?.lastName}</td>
@@ -98,28 +134,6 @@ const AdminDashboard = () => {
             )}
           </tbody>
         </table>
-      </div>
-
-      {/* Quick stats — reviews and contacts */}
-      <div className="admin-stats-grid" style={{ marginTop: 28 }}>
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon orange">
-            <Star size={20} />
-          </div>
-          <div className="admin-stat-info">
-            <h3>{stats?.totalReviews || 0}</h3>
-            <p>Total Reviews</p>
-          </div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon red">
-            <Package size={20} />
-          </div>
-          <div className="admin-stat-info">
-            <h3>{stats?.unreadContacts || 0}</h3>
-            <p>Unread Messages</p>
-          </div>
-        </div>
       </div>
     </div>
   );

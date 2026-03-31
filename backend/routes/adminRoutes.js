@@ -17,6 +17,7 @@ import {
   getContactMessages,
   markContactRead,
   deleteContact,
+  exportMonthlyReport,
 } from "../controller/adminController.js";
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.use(auth, adminAuth);
 
 // Dashboard
 router.get("/stats", getDashboardStats);
+router.get("/reports/monthly/export", exportMonthlyReport);
 
 // Users
 router.get("/users", getAllUsers);

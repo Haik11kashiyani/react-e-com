@@ -73,11 +73,11 @@ export const fetchOrderById = (id) => api.get(`/orders/${id}`);
 
 // ─── Reviews / Testimonials ─────────────────────────
 export const fetchTestimonials = () => api.get('/reviews/testimonials');
-export const fetchReviews = () => api.get('/reviews');
+export const fetchReviews = (params) => api.get('/reviews', { params });
 export const submitReview = (data) => api.post('/reviews', data);
 
 // ─── Coupons ─────────────────────────────────────────
-export const validateCoupon = (code) => api.post('/coupons/validate', { code });
+export const validateCoupon = (data) => api.post('/coupons/validate', data);
 export const fetchCoupons = () => api.get('/coupons');
 
 // ─── Contact ─────────────────────────────────────────
@@ -96,10 +96,21 @@ export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
 // Admin — Orders
 export const fetchAllOrders = (params) => api.get('/admin/orders', { params });
 export const updateOrderStatus = (id, status) => api.patch(`/admin/orders/${id}/status`, { status });
+export const downloadMonthlyReport = ({ year, month, format }) =>
+  api.get('/admin/reports/monthly/export', {
+    params: { year, month, format },
+    responseType: 'blob',
+  });
 
 // Admin — Products (reuse existing endpoints)
-export const adminCreateProduct = (data) => api.post('/products', data);
-export const adminUpdateProduct = (id, data) => api.put(`/products/${id}`, data);
+export const adminCreateProduct = (data) => {
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+  return api.post('/products', data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
+};
+export const adminUpdateProduct = (id, data) => {
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+  return api.put(`/products/${id}`, data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
+};
 export const adminDeleteProduct = (id) => api.delete(`/products/${id}`);
 
 // Admin — Coupons

@@ -47,7 +47,7 @@ export default function CartProvider({ children }) {
     const upper = code.trim().toUpperCase();
     if (!upper) { setCouponError('Enter a coupon code'); return false; }
     try {
-      const res = await validateCouponAPI(upper);
+      const res = await validateCouponAPI({ code: upper, subtotal: totalPrice });
       const coupon = res.data.coupon;
       setAppliedCoupon({ code: coupon.code, ...coupon });
       setCouponError('');
@@ -59,7 +59,7 @@ export default function CartProvider({ children }) {
       setAppliedCoupon(null);
       return false;
     }
-  }, [showToast]);
+  }, [showToast, totalPrice]);
 
   const removeCoupon = useCallback(() => {
     setAppliedCoupon(null);
@@ -112,7 +112,13 @@ export default function CartProvider({ children }) {
   // Calculate discount
   let discount = 0;
   if (appliedCoupon) {
-    if (appliedCoupon.type === 'percent') discount = totalPrice * (appliedCoupon.value / 100);
+    const minSubtotal = Number(appliedCoupon.minSubtotal || 0);
+    if (totalPrice < minSubtotal) {
+      discount = 0;
+    } else if (appliedCoupon.type === 'percent') {
+      const rawDiscount = totalPrice * (appliedCoupon.value / 100);
+      discount = appliedCoupon.maxDiscount ? Math.min(rawDiscount, appliedCoupon.maxDiscount) : rawDiscount;
+    }
     else if (appliedCoupon.type === 'flat') discount = Math.min(appliedCoupon.value, totalPrice);
   }
 

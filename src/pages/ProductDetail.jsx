@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div/img
 import { ShoppingCart, Heart, Star, Truck, Shield, RefreshCw, ChevronLeft, Minus, Plus, ArrowUpRight, Sparkles, CheckCircle } from 'lucide-react';
-import { fetchProductById, fetchRelatedProducts } from '../utils/api';
+import { fetchProductById, fetchRelatedProducts, fetchReviews, submitReview } from '../utils/api';
 import { useCart } from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
 import { FadeIn, SplitText, RevealText, ScaleIn } from '../components/common/AnimatedComponents';
 import LazyImage from '../components/common/LazyImage';
 import { SkeletonProductDetail as SkeletonPD } from '../components/common/UserSkeleton';
@@ -13,8 +14,14 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
+  const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, text: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
@@ -27,8 +34,8 @@ export default function ProductDetail() {
     setLoading(true);
     setError('');
 
-    Promise.all([fetchProductById(id), fetchRelatedProducts(id)])
-      .then(([productRes, relatedRes]) => {
+    Promise.all([fetchProductById(id), fetchRelatedProducts(id), fetchReviews({ productId: id })])
+      .then(([productRes, relatedRes, reviewsRes]) => {
         if (cancelled) return;
 
         const nextProduct = productRes.data?.product;
@@ -39,12 +46,16 @@ export default function ProductDetail() {
 
         setProduct(nextProduct);
         setRelated(relatedRes.data?.products || []);
+        setReviews(reviewsRes.data?.reviews || []);
+        setReviewSummary(reviewsRes.data?.summary || null);
       })
       .catch(() => {
         if (!cancelled) {
           setError('Unable to load product right now.');
           setProduct(null);
           setRelated([]);
+          setReviews([]);
+          setReviewSummary(null);
         }
       })
       .finally(() => {
@@ -82,6 +93,44 @@ export default function ProductDetail() {
   const discount = originalPrice > 0
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : 0;
+
+  const displayedRating = reviewSummary?.averageRating ?? product.rating;
+  const displayedReviewCount = reviewSummary?.totalReviews ?? product.reviews;
+
+  const handleSubmitReview = async () => {
+    if (!user) {
+      setReviewError('Please login to submit your review');
+      return;
+    }
+
+    if (!reviewForm.text.trim()) {
+      setReviewError('Please write your review');
+      return;
+    }
+
+    setSubmittingReview(true);
+    setReviewError('');
+    try {
+      await submitReview({
+        productId: id,
+        rating: Number(reviewForm.rating),
+        text: reviewForm.text.trim(),
+      });
+
+      const [productRes, reviewsRes] = await Promise.all([
+        fetchProductById(id),
+        fetchReviews({ productId: id }),
+      ]);
+      setProduct(productRes.data?.product || product);
+      setReviews(reviewsRes.data?.reviews || []);
+      setReviewSummary(reviewsRes.data?.summary || null);
+      setReviewForm({ rating: 5, text: '' });
+    } catch (err) {
+      setReviewError(err.response?.data?.message || 'Unable to submit review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   return (
     <div className="pd-page">
@@ -145,11 +194,11 @@ export default function ProductDetail() {
             <div className="pd-info__rating">
               <div className="pd-stars">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill={i < Math.round(product.rating) ? '#f1c40f' : 'none'} color={i < Math.round(product.rating) ? '#f1c40f' : '#ddd'} />
+                    <Star key={i} size={16} fill={i < Math.round(displayedRating) ? '#f1c40f' : 'none'} color={i < Math.round(displayedRating) ? '#f1c40f' : '#ddd'} />
                 ))}
               </div>
-              <span className="pd-rating-text">{product.rating}</span>
-              <span className="pd-review-count">({product.reviews.toLocaleString()} reviews)</span>
+                <span className="pd-rating-text">{displayedRating}</span>
+                <span className="pd-review-count">({displayedReviewCount.toLocaleString()} reviews)</span>
             </div>
           </FadeIn>
 
@@ -269,7 +318,7 @@ export default function ProductDetail() {
               <div className="pd-specs">
                 <div className="pd-spec-row"><span>Brand</span><span>{product.brand}</span></div>
                 <div className="pd-spec-row"><span>Category</span><span style={{textTransform:'capitalize'}}>{product.category}</span></div>
-                <div className="pd-spec-row"><span>Rating</span><span>{product.rating} / 5</span></div>
+                <div className="pd-spec-row"><span>Rating</span><span>{displayedRating} / 5</span></div>
                 <div className="pd-spec-row"><span>In Stock</span><span>{product.inStock ? 'Yes' : 'No'}</span></div>
                 {productFeatures.map((f, i) => (
                   <div key={i} className="pd-spec-row"><span>Feature {i+1}</span><span>{f}</span></div>
@@ -278,8 +327,8 @@ export default function ProductDetail() {
             )}
             {activeTab === 'reviews' && (
               <div className="pd-reviews-placeholder">
-                <p><Star size={15} fill="#FFB800" stroke="#FFB800" style={{verticalAlign:'middle', marginRight: 4}} />{product.reviews.toLocaleString()} verified reviews</p>
-                <p>Average rating: {product.rating} out of 5</p>
+                <p><Star size={15} fill="#FFB800" stroke="#FFB800" style={{verticalAlign:'middle', marginRight: 4}} />{displayedReviewCount.toLocaleString()} reviews</p>
+                <p>Average rating: {displayedRating} out of 5</p>
                 <div className="pd-review-bars">
                   {[5,4,3,2,1].map((star) => (
                     <div key={star} className="pd-review-bar">
@@ -288,12 +337,58 @@ export default function ProductDetail() {
                         <motion.div
                           className="pd-bar-fill"
                           initial={{ width: 0 }}
-                          animate={{ width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 7 : star === 2 ? 2 : 1}%` }}
+                          animate={{
+                            width: `${reviewSummary?.totalReviews
+                              ? ((reviewSummary?.distribution?.[star] || 0) / reviewSummary.totalReviews) * 100
+                              : 0}%`,
+                          }}
                           transition={{ duration: 0.8, delay: (5 - star) * 0.1 }}
                         />
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div style={{ marginTop: 22 }}>
+                  <h4 style={{ marginBottom: 10 }}>Write a review</h4>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    <select
+                      value={reviewForm.rating}
+                      onChange={(e) => setReviewForm((prev) => ({ ...prev, rating: Number(e.target.value) }))}
+                      style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
+                    >
+                      {[5, 4, 3, 2, 1].map((r) => <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>)}
+                    </select>
+                    <textarea
+                      value={reviewForm.text}
+                      onChange={(e) => setReviewForm((prev) => ({ ...prev, text: e.target.value }))}
+                      placeholder={user ? 'Share your experience with this product...' : 'Login to write a review'}
+                      rows={4}
+                      style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
+                    />
+                    {reviewError && <p style={{ color: '#ef4444', margin: 0 }}>{reviewError}</p>}
+                    <button className="pill-btn pill-btn-primary" onClick={handleSubmitReview} disabled={submittingReview}>
+                      {submittingReview ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 22, display: 'grid', gap: 12 }}>
+                  {reviews.length ? reviews.slice(0, 8).map((review) => (
+                    <div key={review._id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: '12px 14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                        <strong>{review.name}</strong>
+                        <span style={{ color: '#6b7280', fontSize: 12 }}>{new Date(review.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={14} fill={i < Math.round(review.rating) ? '#f1c40f' : 'none'} color={i < Math.round(review.rating) ? '#f1c40f' : '#d1d5db'} />
+                        ))}
+                        {review.isVerifiedPurchase && <span style={{ marginLeft: 8, color: '#16a34a', fontSize: 12 }}>Verified Purchase</span>}
+                      </div>
+                      <p style={{ margin: 0 }}>{review.text}</p>
+                    </div>
+                  )) : <p style={{ color: '#6b7280' }}>No reviews yet. Be the first to review this product.</p>}
                 </div>
               </div>
             )}

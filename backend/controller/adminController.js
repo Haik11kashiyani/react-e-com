@@ -5,6 +5,9 @@ import Coupon from "../models/Coupon.js";
 import Review from "../models/Review.js";
 import ContactMessage from "../models/ContactMessage.js";
 import { refreshProductRating } from "../utils/reviewStats.js";
+import { generateMonthlyReportExcel, generateMonthlyReportPdf, buildMonthlyReportRows, buildMonthlyReportSummary } from "../utils/reportGenerator.js";
+import { generateInvoicePdfBuffer, buildInvoiceEmailHtml } from "../utils/invoiceGenerator.js";
+import { sendMail } from "../config/mailer.js";
 
 const getRecentMonths = (count = 6) => {
   const result = [];
@@ -286,15 +289,81 @@ export const updateOrderStatus = async (req, res) => {
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status" });
     }
-    const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate(
-      "user",
-      "firstName lastName email"
-    );
+    const order = await Order.findById(req.params.id)
+      .populate("user", "firstName lastName email")
+      .populate("items.product", "name");
+
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    const previousStatus = order.status;
+    order.status = status;
+    await order.save();
+
+    if (previousStatus !== "confirmed" && status === "confirmed" && order.user?.email) {
+      try {
+        const pdfBuffer = await generateInvoicePdfBuffer({ order });
+        const html = buildInvoiceEmailHtml({ order });
+        await sendMail({
+          toEmail: order.user.email,
+          subject: `TechOrbit Invoice - Order ${String(order._id).slice(-8).toUpperCase()}`,
+          html,
+          attachments: [
+            {
+              filename: `invoice-${String(order._id).slice(-8)}.pdf`,
+              content: pdfBuffer,
+              contentType: "application/pdf",
+            },
+          ],
+        });
+      } catch (mailError) {
+        console.error("Invoice email send failed:", mailError);
+      }
+    }
+
     res.json({ success: true, order });
   } catch (error) {
     console.error("updateOrderStatus error:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// GET /api/admin/reports/monthly/export
+export const exportMonthlyReport = async (req, res) => {
+  try {
+    const now = new Date();
+    const year = Number(req.query.year || now.getFullYear());
+    const month = Number(req.query.month || now.getMonth() + 1);
+    const format = String(req.query.format || "excel").toLowerCase();
+
+    if (!year || month < 1 || month > 12) {
+      return res.status(400).json({ success: false, message: "Invalid year/month" });
+    }
+
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 1);
+
+    const orders = await Order.find({ createdAt: { $gte: start, $lt: end } })
+      .populate("user", "firstName lastName email")
+      .sort({ createdAt: 1 });
+
+    const rows = buildMonthlyReportRows({ orders });
+    const summary = buildMonthlyReportSummary({ orders });
+    const monthLabel = `${year}-${String(month).padStart(2, "0")}`;
+
+    if (format === "pdf") {
+      const pdfBuffer = await generateMonthlyReportPdf({ monthLabel, rows, summary });
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename=monthly-report-${monthLabel}.pdf`);
+      return res.send(pdfBuffer);
+    }
+
+    const excelBuffer = generateMonthlyReportExcel({ monthLabel, rows, summary });
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=monthly-report-${monthLabel}.xlsx`);
+    return res.send(excelBuffer);
+  } catch (error) {
+    console.error("exportMonthlyReport error:", error);
+    return res.status(500).json({ success: false, message: "Failed to export monthly report" });
   }
 };
 

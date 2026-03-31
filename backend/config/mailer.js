@@ -39,10 +39,11 @@ const getTransporter = () => {
 };
 
 
-export const sendVerificationEmail = async ({
+export const sendMail = async ({
   toEmail,
   subject,
   html,
+  attachments = [],
 }) => {
   const transporter = getTransporter();
 
@@ -57,6 +58,7 @@ export const sendVerificationEmail = async ({
       to: toEmail,
       subject,
       html,
+      attachments,
     });
     console.log("✅ Email sent:", info.messageId);
   } catch (err) {
@@ -65,5 +67,8 @@ export const sendVerificationEmail = async ({
     throw err;
   }
 };
+
+export const sendVerificationEmail = async ({ toEmail, subject, html }) =>
+  sendMail({ toEmail, subject, html });
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchAllOrders, updateOrderStatus } from '../../utils/api';
+import { fetchAllOrders, updateOrderStatus, downloadMonthlyReport } from '../../utils/api';
 import { SkeletonOrdersPage } from '../../components/common/SkeletonLoader';
 import '../admin.css';
 
@@ -13,6 +13,10 @@ const AdminOrders = () => {
   const [pagination, setPagination] = useState({});
   const [toast, setToast] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const now = new Date();
+  const [reportYear, setReportYear] = useState(now.getFullYear());
+  const [reportMonth, setReportMonth] = useState(now.getMonth() + 1);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -44,6 +48,33 @@ const AdminOrders = () => {
     }
   };
 
+  const handleReportDownload = async (format) => {
+    setReportLoading(true);
+    try {
+      const res = await downloadMonthlyReport({
+        year: reportYear,
+        month: reportMonth,
+        format,
+      });
+
+      const ext = format === 'pdf' ? 'pdf' : 'xlsx';
+      const filename = `monthly-report-${reportYear}-${String(reportMonth).padStart(2, '0')}.${ext}`;
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      showToast(`Downloaded ${filename}`);
+    } catch {
+      showToast('Failed to download report', 'error');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   if (loading && orders.length === 0) return <SkeletonOrdersPage />;
 
   return (
@@ -58,6 +89,24 @@ const AdminOrders = () => {
             <option value="all">All Status</option>
             {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
+          <select className="admin-filter-select" value={reportMonth} onChange={(e) => setReportMonth(Number(e.target.value))}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option key={i + 1} value={i + 1}>{String(i + 1).padStart(2, '0')}</option>
+            ))}
+          </select>
+          <input
+            className="admin-search-input"
+            style={{ maxWidth: 110 }}
+            type="number"
+            value={reportYear}
+            onChange={(e) => setReportYear(Number(e.target.value))}
+          />
+          <button className="admin-btn admin-btn-ghost" onClick={() => handleReportDownload('excel')} disabled={reportLoading}>
+            {reportLoading ? 'Preparing...' : 'Export Excel'}
+          </button>
+          <button className="admin-btn admin-btn-primary" onClick={() => handleReportDownload('pdf')} disabled={reportLoading}>
+            {reportLoading ? 'Preparing...' : 'Export PDF'}
+          </button>
         </div>
 
         <table className="admin-table">

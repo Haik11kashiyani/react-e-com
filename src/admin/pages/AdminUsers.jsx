@@ -88,8 +88,13 @@ const AdminUsers = () => {
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
+              <th>Gender</th>
+              <th>Email Verified</th>
               <th>Role</th>
               <th>Status</th>
+              <th>Total Orders</th>
+              <th>Total Spent</th>
+              <th>Last Order</th>
               <th>Joined</th>
               <th>Actions</th>
             </tr>
@@ -100,8 +105,13 @@ const AdminUsers = () => {
                 <td style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</td>
                 <td>{u.email}</td>
                 <td>{u.phone}</td>
+                <td style={{ textTransform: 'capitalize' }}>{u.gender || '—'}</td>
+                <td><span className={`admin-badge ${u.isEmailVerified ? 'active' : 'inactive'}`}>{u.isEmailVerified ? 'Yes' : 'No'}</span></td>
                 <td><span className={`admin-badge ${u.role}`}>{u.role}</span></td>
                 <td><span className={`admin-badge ${u.isActive ? 'active' : 'inactive'}`}>{u.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>{u.totalOrders || 0}</td>
+                <td>₹{Number(u.totalSpent || 0).toLocaleString()}</td>
+                <td style={{ fontSize: 12 }}>{u.lastOrderAt ? new Date(u.lastOrderAt).toLocaleDateString() : '—'}</td>
                 <td style={{ fontSize: 12 }}>{new Date(u.createdAt).toLocaleDateString()}</td>
                 <td>
                   <div className="admin-actions">
@@ -126,7 +136,7 @@ const AdminUsers = () => {
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={7} className="admin-empty"><p>No users found</p></td></tr>
+              <tr><td colSpan={12} className="admin-empty"><p>No users found</p></td></tr>
             )}
           </tbody>
         </table>
