@@ -1,0 +1,397 @@
+/* ========================================================
+   CORESOL MARQUEE — Enhanced with Hover & Sidebar
+   ======================================================== */
+
+.marquee-container {
+  width: 100%;
+  padding: 60px 0;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.coresol-marquee-track {
+  display: flex;
+  gap: 20px;
+  animation: marqueeScroll 50s linear infinite;
+  width: max-content;
+  padding: 0 20px;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Marquee Item */
+.marquee-item {
+  position: relative;
+  width: 280px;
+  height: 200px;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: all 0.3s ease;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+}
+
+.marquee-item:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.marquee-item__video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.marquee-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.marquee-item:hover video {
+  transform: scale(1.1);
+}
+
+.marquee-item__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 60%);
+  transition: background 0.3s ease;
+}
+
+.marquee-item:hover .marquee-item__overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 60%);
+}
+
+/* Hover Text */
+.marquee-item__hover-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.marquee-item:hover .marquee-item__hover-text {
+  opacity: 1;
+}
+
+.marquee-item__hover-text span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #a1ff62;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  animation: pulse-marquee 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-marquee {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* Text */
+.marquee-item__text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  text-align: left;
+  z-index: 1;
+}
+
+.marquee-item--clickable {
+  cursor: pointer;
+}
+
+/* ========================================================
+   SIDEBAR
+   ======================================================== */
+
+.marquee-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+.marquee-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: min(90vw, 500px);
+  background: #fff;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.marquee-sidebar__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.marquee-sidebar__close:hover {
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+.marquee-sidebar__header {
+  padding: 40px 24px 30px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.marquee-sidebar__title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #0e0e0e;
+  font-family: 'Amarna', sans-serif;
+}
+
+.marquee-sidebar__description {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.marquee-sidebar__products {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.marquee-sidebar__products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.marquee-sidebar__product-card {
+  display: flex;
+  gap: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.marquee-sidebar__product-card:hover {
+  border-color: #a1ff62;
+  background: rgba(161, 255, 98, 0.03);
+  box-shadow: 0 4px 12px rgba(161, 255, 98, 0.1);
+}
+
+.marquee-sidebar__product-img {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.marquee-sidebar__product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.marquee-sidebar__product-card:hover .marquee-sidebar__product-img img {
+  transform: scale(1.1);
+}
+
+.marquee-sidebar__product-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #a1ff62;
+  color: #0a0a0a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.marquee-sidebar__product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.marquee-sidebar__product-info h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  color: #0e0e0e;
+  line-height: 1.3;
+}
+
+.marquee-sidebar__product-brand {
+  font-size: 11px;
+  color: #999;
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.marquee-sidebar__product-rating {
+  font-size: 11px;
+  color: #666;
+  margin: 0 0 6px;
+}
+
+.marquee-sidebar__product-price {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 8px;
+}
+
+.marquee-sidebar__product-price .price {
+  font-weight: 700;
+  color: #0e0e0e;
+  font-size: 13px;
+}
+
+.marquee-sidebar__product-price .original-price {
+  font-size: 11px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.marquee-sidebar__product-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: #a1ff62;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.marquee-sidebar__product-btn:hover {
+  background: #8fec4a;
+  transform: translateX(2px);
+}
+
+.marquee-sidebar__empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 13px;
+}
+
+/* Scrollbar Styling */
+.marquee-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.marquee-sidebar::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.marquee-sidebar::-webkit-scrollbar-thumb {
+  background: #a1ff62;
+  border-radius: 3px;
+}
+
+.marquee-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #8fec4a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .marquee-item {
+    width: 220px;
+    height: 160px;
+  }
+
+  .marquee-sidebar {
+    width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .coresol-marquee-track {
+    gap: 12px;
+  }
+
+  .marquee-item {
+    width: 160px;
+    height: 120px;
+  }
+
+  .marquee-item__text {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .marquee-sidebar {
+    width: 100vw;
+  }
+}

@@ -22,14 +22,32 @@ const __dirname = path.dirname(__filename);
 // Database connection
 connectDB();
 
+// CORS Configuration to allow multiple origins
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow localhost variants and network IPs
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      /^http:\/\/192\.168\.\d+\.\d+:\d+$/,  // Local network IPs
+      /^http:\/\/172\.16\.\d+\.\d+:\d+$/,   // Private network IPs
+      /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/,   // Private network IPs
+    ];
+
+    if (!origin || allowedOrigins.some(allowed => 
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+    )) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
 // Middleware
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  }),
-);
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -43,6 +43,9 @@ export default function CartProvider({ children }) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
+  // Calculate totalPrice early for use in applyCoupon
+  const totalPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+
   const applyCoupon = useCallback(async (code) => {
     const upper = code.trim().toUpperCase();
     if (!upper) { setCouponError('Enter a coupon code'); return false; }
@@ -107,7 +110,6 @@ export default function CartProvider({ children }) {
   const isInWishlist = useCallback((productId) => wishlist.includes(productId), [wishlist]);
 
   const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   // Calculate discount
   let discount = 0;

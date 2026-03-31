@@ -55,8 +55,9 @@
   min-height: calc(100vh - 100px);
   display: flex;
   align-items: center;
-  padding: 80px 5% 40px;
+  padding: 120px 5% 40px;
   overflow: hidden;
+  margin-top: 60px;
 }
 
 /* Background orbs */

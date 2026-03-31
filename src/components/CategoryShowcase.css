@@ -56,6 +56,10 @@
   text-decoration: none;
   aspect-ratio: 3 / 4;
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .cs-card:hover { transform: translateY(-6px); }
@@ -63,26 +67,64 @@
 .cs-card__img {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .cs-card__img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: block;
 }
 
-.cs-card:hover .cs-card__img img { transform: scale(1.08); }
+.cs-card:hover .cs-card__img img { 
+  transform: scale(1.08); 
+}
 
 .cs-card__overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
   transition: background 0.4s ease;
+  z-index: 1;
 }
 
 .cs-card:hover .cs-card__overlay {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
+}
+
+/* Hover Text */
+.cs-card__hover-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.cs-card:hover .cs-card__hover-text {
+  opacity: 1;
+}
+
+.cs-card__click-me {
+  font-size: 18px;
+  font-weight: 700;
+  color: #a1ff62;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: pulse-text 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
 }
 
 /* Content */
@@ -110,11 +152,16 @@
   color: #0a0a0a;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
+  font-size: 20px;
 }
 
-.cs-card:hover .cs-card__icon { transform: scale(1.1); }
+.cs-card:hover .cs-card__icon { 
+  transform: scale(1.1); 
+}
 
-.cs-card__text { flex: 1; }
+.cs-card__text { 
+  flex: 1; 
+}
 
 .cs-card__text h3 {
   font-family: var(--vw-font-heading, 'Amarna'), sans-serif;
@@ -144,10 +191,280 @@
   flex-shrink: 0;
   transition: all 0.3s ease;
   transform: translate(0, 0);
+  border: none;
+  font-size: 20px;
 }
 
 .cs-card:hover .cs-card__arrow {
   background: #fff;
+  color: #0a0a0a;
+}
+
+/* ========================================================
+   SIDEBAR
+   ======================================================== */
+
+.cs-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+.cs-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: min(90vw, 500px);
+  background: #fff;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.cs-sidebar__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.cs-sidebar__close:hover {
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+.cs-sidebar__header {
+  padding: 40px 24px 30px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.cs-sidebar__icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.cs-sidebar__title {
+  font-family: var(--vw-font-heading, 'Amarna'), sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #0e0e0e;
+}
+
+.cs-sidebar__description {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cs-sidebar__products {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.cs-sidebar__products-title {
+  font-family: var(--vw-font-heading, 'Amarna'), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: #0e0e0e;
+}
+
+.cs-sidebar__products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.cs-sidebar__product-card {
+  display: flex;
+  gap: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cs-sidebar__product-card:hover {
+  border-color: #a1ff62;
+  background: rgba(161, 255, 98, 0.03);
+  box-shadow: 0 4px 12px rgba(161, 255, 98, 0.1);
+}
+
+.cs-sidebar__product-img {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cs-sidebar__product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.cs-sidebar__product-card:hover .cs-sidebar__product-img img {
+  transform: scale(1.1);
+}
+
+.cs-sidebar__product-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #a1ff62;
+  color: #0a0a0a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cs-sidebar__product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cs-sidebar__product-info h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  color: #0e0e0e;
+  line-height: 1.3;
+}
+
+.cs-sidebar__product-brand {
+  font-size: 11px;
+  color: #999;
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.cs-sidebar__product-rating {
+  font-size: 11px;
+  color: #666;
+  margin: 0 0 6px;
+}
+
+.cs-sidebar__product-price {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 8px;
+}
+
+.cs-sidebar__product-price .price {
+  font-weight: 700;
+  color: #0e0e0e;
+  font-size: 13px;
+}
+
+.cs-sidebar__product-price .original-price {
+  font-size: 11px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.cs-sidebar__product-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: #a1ff62;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cs-sidebar__product-btn:hover {
+  background: #8fec4a;
+  transform: translateX(2px);
+}
+
+.cs-sidebar__empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cs-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .cs-sidebar {
+    width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .cs-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .cs-card__text h3 {
+    font-size: 0.9rem;
+  }
+
+  .cs-card__text span {
+    display: none;
+  }
+
+  .cs-sidebar {
+    width: 100vw;
+  }
+
+  .cs-sidebar__products {
+    padding: 16px;
+  }
+}
   color: #0a0a0a;
   transform: translate(2px, -2px);
 }

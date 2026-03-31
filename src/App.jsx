@@ -21,7 +21,6 @@ import { SkeletonProductsGrid, SkeletonProductDetail, SkeletonCart, SkeletonWish
 // Home components (kept eagerly loaded for fast LCP)
 import HeroSec from './components/heroSec'
 import CoresolMarq from './components/coresolMarq'
-import CategoryShowcase from './components/CategoryShowcase'
 import FeaturedProducts from './components/FeaturedProducts'
 import Testimonials from './components/Testimonials'
 import BrandFeatures from './components/BrandFeatures'
@@ -87,7 +86,6 @@ function App() {
             <Route path="/" element={
               <PageTransition>
                 <HeroSec />
-                <CategoryShowcase />
                 <CoresolMarq />
                 <FeaturedProducts />
                 <Testimonials />
