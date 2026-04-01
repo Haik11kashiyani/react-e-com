@@ -126,4 +126,16 @@ export const fetchContactMessages = () => api.get('/admin/contacts');
 export const markContactRead = (id) => api.patch(`/admin/contacts/${id}/read`);
 export const deleteContactMessage = (id) => api.delete(`/admin/contacts/${id}`);
 
+// ─── Comparisons ─────────────────────────────────────
+export const fetchComparisons = () => api.get('/comparisons');
+export const adminCreateComparison = (data) => api.post('/comparisons', data);
+export const adminUpdateComparison = (id, data) => api.put(`/comparisons/${id}`, data);
+export const adminDeleteComparison = (id) => api.delete(`/comparisons/${id}`);
+
+// ─── Carousel ─────────────────────────────────────
+export const fetchCarouselItems = () => api.get('/carousel');
+export const adminCreateCarouselItem = (data) => api.post('/carousel', data);
+export const adminUpdateCarouselItem = (id, data) => api.put(`/carousel/${id}`, data);
+export const adminDeleteCarouselItem = (id) => api.delete(`/carousel/${id}`);
+
 export default api;

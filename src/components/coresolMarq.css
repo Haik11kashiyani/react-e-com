@@ -3,58 +3,74 @@
    ======================================================== */
 
 .marquee-container {
-  width: 100%;
-  padding: 60px 0;
-  background: #fff;
   overflow: hidden;
+  width: 100%;
+  height: 800px; /* Increased to prevent cutting */
   position: relative;
-  z-index: 1;
+  background: transparent;
+  perspective: 1000px;
+  margin-top: 100px;
+  z-index: 50; /* Higher than ProductCompare (10) */
+  padding-bottom: 50px;
 }
 
 .coresol-marquee-track {
-  display: flex;
-  gap: 20px;
-  animation: marqueeScroll 50s linear infinite;
-  width: max-content;
-  padding: 0 20px;
+  width: 2800px;
+  height: 2800px;
+  position: absolute;
+  left: 50%;
+  top: 150px; /* Moved up completely to prevent cutting bottom */
+  transform: translate(-50%, 0);
+  border-radius: 50%;
+  animation: wheel-scroll 160s linear infinite; 
 }
 
-@keyframes marqueeScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+@keyframes wheel-scroll {
+  0% { transform: translate(-50%, 0) rotate(0deg); }
+  100% { transform: translate(-50%, 0) rotate(-360deg); /* Reversed Direction */ }
 }
 
 /* Marquee Item */
 .marquee-item {
-  position: relative;
-  width: 280px;
-  height: 200px;
-  border-radius: 16px;
-  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 300px;
+  height: 240px; /* Fixed height for consistent look */
+  margin-left: -150px; /* Center anchor X */
+  margin-top: -120px;  /* Center anchor Y */
+  
+  /* Radial Positioning: Rotate to angle, then push out by Radius */
+  transform: rotate(calc(360deg / var(--total) * var(--i))) translateY(-1400px);
+  
   flex-shrink: 0;
-  background: #000;
+  background: #0a0a0a;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transition: box-shadow 0.3s ease;
   cursor: pointer;
   border: none;
   padding: 0;
-  transition: all 0.3s ease;
-  -webkit-perspective: 1000px;
-  perspective: 1000px;
 }
 
 .marquee-item:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 20px rgba(161,255,98,0.2);
+  /* Tricky to use translateY on hover here because it overrides the radial transform */
 }
 
 .marquee-item__video-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
+  flex: 1;
   overflow: hidden;
-  border-radius: 16px;
 }
 
-.marquee-item video {
+.marquee-item video,
+.marquee-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -69,15 +85,15 @@
 .marquee-item__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 60%);
   transition: background 0.3s ease;
 }
 
 .marquee-item:hover .marquee-item__overlay {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 60%);
 }
 
-/* Hover Text */
+/* Hover Text - Button Style Animation */
 .marquee-item__hover-text {
   position: absolute;
   inset: 0;
@@ -87,25 +103,40 @@
   z-index: 2;
   opacity: 0;
   transition: opacity 0.4s ease;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .marquee-item:hover .marquee-item__hover-text {
   opacity: 1;
 }
 
-.marquee-item__hover-text span {
+.hover-click-text {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 30px;
+}
+
+.hover-click-text span {
   font-size: 16px;
   font-weight: 700;
   color: #a1ff62;
   letter-spacing: 2px;
   text-transform: uppercase;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-  animation: pulse-marquee 0.8s ease-in-out infinite;
+  display: block;
+  transform-origin: center 120px;
+  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease;
+  transform: rotate(-25deg);
+  opacity: 0;
 }
 
-@keyframes pulse-marquee {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
+.marquee-item:hover .hover-click-text span {
+  transform: rotate(0deg);
+  opacity: 1;
 }
 
 /* Text */
@@ -138,7 +169,11 @@
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   z-index: 999;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.4s ease;
+}
+
+.marquee-sidebar-overlay.closing {
+  animation: fadeOut 0.4s ease forwards;
 }
 
 .marquee-sidebar {
@@ -152,8 +187,12 @@
   display: flex;
   flex-direction: column;
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.15);
-  animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slideInSidebar 0.8s cubic-bezier(0.19, 1, 0.22, 1);
   overflow-y: auto;
+}
+
+.marquee-sidebar.closing {
+  animation: slideOutSidebar 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -161,9 +200,45 @@
   to { opacity: 1; }
 }
 
-@keyframes slideIn {
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInSidebar {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+
+@keyframes slideOutSidebar {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.sidebar-animate-item {
+  opacity: 0;
+  transform-origin: left bottom;
+  transform: translateY(30px) rotate(-5deg);
+  animation: sidebarItemIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation-delay: var(--anim-delay, 0.1s);
+}
+
+.sidebar-animate-item.closing {
+  animation: sidebarItemOut 0.3s forwards;
+}
+
+@keyframes sidebarItemIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes sidebarItemOut {
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 .marquee-sidebar__close {
@@ -365,32 +440,47 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .marquee-item {
-    width: 220px;
-    height: 160px;
+@media (max-width: 1024px) {
+  .marquee-container { height: 650px; margin-top: 60px; }
+  .coresol-marquee-track { width: 2200px; height: 2200px; top: 120px; }
+  .marquee-item { 
+    width: 240px; 
+    height: 190px; 
+    margin-left: -120px; 
+    margin-top: -95px; 
+    transform: rotate(calc(360deg / var(--total) * var(--i))) translateY(-1100px); 
   }
+}
 
+@media (max-width: 768px) {
+  .marquee-container { height: 550px; margin-top: 40px; padding-bottom: 30px; }
+  .coresol-marquee-track { width: 1800px; height: 1800px; top: 80px; }
+  .marquee-item { 
+    width: 200px; 
+    height: 160px; 
+    margin-left: -100px; 
+    margin-top: -80px; 
+    transform: rotate(calc(360deg / var(--total) * var(--i))) translateY(-900px); 
+  }
+  .marquee-item__text { font-size: 14px; }
+  
   .marquee-sidebar {
     width: 100vw;
   }
 }
 
 @media (max-width: 480px) {
-  .coresol-marquee-track {
-    gap: 12px;
+  .marquee-container { height: 450px; margin-top: 20px; padding-bottom: 20px; }
+  .coresol-marquee-track { width: 1400px; height: 1400px; top: 60px; }
+  .marquee-item { 
+    width: 160px; 
+    height: 130px; 
+    margin-left: -80px; 
+    margin-top: -65px; 
+    transform: rotate(calc(360deg / var(--total) * var(--i))) translateY(-700px); 
   }
-
-  .marquee-item {
-    width: 160px;
-    height: 120px;
-  }
-
-  .marquee-item__text {
-    font-size: 12px;
-    padding: 12px;
-  }
-
+  .marquee-item__text { font-size: 12px; }
+  
   .marquee-sidebar {
     width: 100vw;
   }

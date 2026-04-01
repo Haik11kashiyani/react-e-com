@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, Ticket, Star, Mail, LogOut, Menu, X, ChevronRight, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Ticket, Star, Mail, LogOut, Menu, X, ChevronRight, Sun, Moon, Columns, PlaySquare } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import AdminThemeProvider, { useAdminTheme } from './AdminThemeContext';
 import './AdminLayout.css';
@@ -10,6 +10,8 @@ const navItems = [
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
   { to: '/admin/users', icon: Users, label: 'Users' },
+  { to: '/admin/comparisons', icon: Columns, label: 'Comparisons' },
+  { to: '/admin/carousel', icon: PlaySquare, label: 'Carousel' },
   { to: '/admin/coupons', icon: Ticket, label: 'Coupons' },
   { to: '/admin/reviews', icon: Star, label: 'Reviews' },
   { to: '/admin/contacts', icon: Mail, label: 'Messages' },
@@ -44,19 +46,22 @@ const AdminLayoutInner = () => {
         </div>
 
         <nav className="admin-nav">
-          {navItems.map(({ to, icon: Icon, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Icon size={20} />
-              <span>{label}</span>
-              <ChevronRight size={16} className="admin-nav-arrow" />
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Icon size={20} />
+                <span>{item.label}</span>
+                <ChevronRight size={16} className="admin-nav-arrow" />
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="admin-sidebar-footer">

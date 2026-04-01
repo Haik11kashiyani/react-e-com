@@ -51,6 +51,8 @@ const AdminUsers = lazy(() => import('./admin/pages/AdminUsers'))
 const AdminCoupons = lazy(() => import('./admin/pages/AdminCoupons'))
 const AdminReviews = lazy(() => import('./admin/pages/AdminReviews'))
 const AdminContacts = lazy(() => import('./admin/pages/AdminContacts'))
+const AdminComparisons = lazy(() => import('./admin/pages/AdminComparisons'))
+const AdminCarousel = lazy(() => import('./admin/pages/AdminCarousel'))
 
 // Styles
 import './styles/animations.css'
@@ -122,6 +124,8 @@ function App() {
               <Route path="products" element={<SuspenseWrap><AdminProducts /></SuspenseWrap>} />
               <Route path="orders" element={<SuspenseWrap><AdminOrders /></SuspenseWrap>} />
               <Route path="users" element={<SuspenseWrap><AdminUsers /></SuspenseWrap>} />
+              <Route path="comparisons" element={<SuspenseWrap><AdminComparisons /></SuspenseWrap>} />
+              <Route path="carousel" element={<SuspenseWrap><AdminCarousel /></SuspenseWrap>} />
               <Route path="coupons" element={<SuspenseWrap><AdminCoupons /></SuspenseWrap>} />
               <Route path="reviews" element={<SuspenseWrap><AdminReviews /></SuspenseWrap>} />
               <Route path="contacts" element={<SuspenseWrap><AdminContacts /></SuspenseWrap>} />

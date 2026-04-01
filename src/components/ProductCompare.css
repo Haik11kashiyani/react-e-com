@@ -1,4 +1,4 @@
-﻿/* ===================================================================
+/* ===================================================================
    Product Compare Section - Premium Awwwards-Level
    =================================================================== */
 .compare-section {
@@ -225,6 +225,9 @@
   list-style: none;
   padding: 0;
   margin: 4px 0 0;
+  flex: 1; /* Pushes the buy button to the bottom */
+  display: flex;
+  flex-direction: column;
 }
 
 .compare-spec-row {
@@ -273,7 +276,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.35s var(--vw-ease-out);
-  margin-top: 6px;
+  margin-top: auto;
   letter-spacing: 0.02em;
   font-family: var(--vw-font-body);
   position: relative;

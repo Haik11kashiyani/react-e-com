@@ -11,6 +11,8 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import comparisonRoutes from "./routes/comparisonRoutes.js";
+import carouselRoutes from "./routes/carouselRoutes.js";
 import process from "process";
 
 dotenv.config();
@@ -63,6 +65,8 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/comparisons", comparisonRoutes);
+app.use("/api/carousel", carouselRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
