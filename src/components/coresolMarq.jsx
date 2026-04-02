@@ -34,6 +34,15 @@ function CoresolMarq() {
       })
       .catch((err) => {
         console.error("Failed to load carousel items", err);
+        // Fallback static items if DB is offline/fails
+        const fallbackItems = [
+          { video: "/assets/videos/1.mp4", text: "Next-Gen Smartphones", category: 'phone' },
+          { video: "/assets/videos/3.mp4", text: "Premium Audio", category: 'audio' },
+          { video: "/assets/videos/4.mp4", text: "Smart Wearables", category: 'smartwatch' },
+          { video: "/assets/videos/5.mp4", text: "Ultra-Thin Laptops", category: 'laptop' }
+        ];
+        const repeats = Math.max(2, Math.ceil(18 / fallbackItems.length));
+        setItems(Array(repeats).fill(fallbackItems).flat());
         setLoading(false);
       });
   }, []);
@@ -60,7 +69,9 @@ function CoresolMarq() {
                 className="marquee-item marquee-item--clickable"
                 key={index}
                 onClick={() => setSelectedCategory({ text: item.text, category: item.category })}
-                style={{ '--i': index, '--total': items.length }}
+                style={{
+                  transform: `rotate(${(360 / items.length) * index}deg) translateY(var(--radius, -1400px))`
+                }}
               >
                 <div className="marquee-item__video-wrapper">
                   <video src={item.video} autoPlay loop muted playsInline></video>
