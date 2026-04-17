@@ -134,9 +134,9 @@ function CoresolMarq() {
                           ⭐ {product.rating} ({product.reviews})
                         </div>
                         <div className="marquee-sidebar__product-price">
-                          <span className="price">${product.price}</span>
+                          <span className="price">₹{product.price}</span>
                           {product.originalPrice && (
-                            <span className="original-price">${product.originalPrice}</span>
+                            <span className="original-price">₹{product.originalPrice}</span>
                           )}
                         </div>
                         <button className="marquee-sidebar__product-btn">

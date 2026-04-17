@@ -3,15 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line
 import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Tag, MapPin, Globe, Settings, ChevronRight,
-  Copy, Check, Trash2, Plus, Edit2, Save, ArrowLeft, LogOut
+  Copy, Check, Trash2, Plus, Edit2, Save, ArrowLeft, LogOut, ShoppingBag
 } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import useAuth from '../hooks/useAuth';
-import { updateProfile } from '../utils/api';
+import { updateProfile, fetchMyOrders } from '../utils/api';
 import { SplitText, FadeIn } from '../components/common/AnimatedComponents';
 import './Profile.css';
 
 const tabs = [
+  { id: 'orders', label: 'My Orders', icon: ShoppingBag },
   { id: 'coupons', label: 'My Coupons', icon: Tag },
   { id: 'addresses', label: 'Addresses', icon: MapPin },
   { id: 'language', label: 'Language', icon: Globe },
@@ -42,14 +43,34 @@ export default function Profile() {
   const [showAddrForm, setShowAddrForm] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setProfileName(`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User');
+      setProfileName(`${user.firstName || ''} ${user.lastName || ''}`.trim());
       setProfileEmail(user.email || '');
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && tab === 'orders') {
+      fetchOrders();
+    }
+  }, [user, tab]);
+
+  const fetchOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await fetchMyOrders();
+      setOrders(res.data?.orders || []);
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -157,6 +178,56 @@ export default function Profile() {
           {/* Main content */}
           <div className="profile-main">
             <AnimatePresence mode="wait">
+              {/* === ORDERS TAB === */}
+              {tab === 'orders' && (
+                <motion.div key="orders" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                  <h2 className="profile-section-title">Order History</h2>
+                  <p className="profile-section-sub">Track and manage your orders.</p>
+                  {loadingOrders ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>Loading orders...</div>
+                  ) : orders.length > 0 ? (
+                    <div className="orders-list">
+                      {orders.map((order) => (
+                        <div key={order._id} className="order-card">
+                          <div className="order-card__header">
+                            <div className="order-card__id">
+                              <span className="order-card__label">Order ID</span>
+                              <span className="order-card__value">#{order._id?.slice(-8).toUpperCase()}</span>
+                            </div>
+                            <div className="order-card__date">
+                              <span className="order-card__label">Date</span>
+                              <span className="order-card__value">{new Date(order.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="order-card__total">
+                              <span className="order-card__label">Total</span>
+                              <span className="order-card__value">₹{order.total?.toFixed(2)}</span>
+                            </div>
+                            <div className="order-card__status-container">
+                              <span className="order-card__label">Status</span>
+                              <span className={`order-card__status order-status-${order.status?.toLowerCase() || 'pending'}`}>
+                                {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="order-card__items">
+                            <div className="order-card__items-label">Items</div>
+                            {order.items?.map((item, idx) => (
+                              <div key={idx} className="order-item">
+                                <span className="order-item__name">{item.name}</span>
+                                <span className="order-item__qty">x{item.qty}</span>
+                                <span className="order-item__price">₹{(item.price * item.qty)?.toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="profile-empty">No orders yet. Start shopping!</p>
+                  )}
+                </motion.div>
+              )}
+
               {/* === COUPONS TAB === */}
               {tab === 'coupons' && (
                 <motion.div key="coupons" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
@@ -167,7 +238,7 @@ export default function Profile() {
                       <div key={code} className={`coupon-card ${appliedCoupon?.code === code ? 'applied' : ''}`}>
                         <div className="coupon-card__left">
                           <span className="coupon-card__value">
-                            {coupon.type === 'percent' ? `${coupon.value}%` : coupon.type === 'flat' ? `$${coupon.value}` : 'FREE'}
+                            {coupon.type === 'percent' ? `${coupon.value}%` : coupon.type === 'flat' ? `₹${coupon.value}` : 'FREE'}
                           </span>
                           <span className="coupon-card__type">
                             {coupon.type === 'shipping' ? 'SHIPPING' : 'OFF'}

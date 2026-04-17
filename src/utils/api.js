@@ -13,6 +13,9 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  if (config.url?.includes('/admin/')) {
+    console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, { token: !!token, body: config.data });
+  }
   return config;
 });
 
@@ -23,6 +26,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('techorbit_token');
       localStorage.removeItem('techorbit_user');
+    }
+    if (error.config?.url?.includes('/admin/')) {
+      console.error(`[API ERROR] ${error.config.method?.toUpperCase()} ${error.config.url}`, 
+        { status: error.response?.status, message: error.response?.data?.message });
     }
     return Promise.reject(error);
   }

@@ -5,7 +5,7 @@ import { validateCoupon as validateCouponAPI, fetchCoupons } from '../utils/api'
 const FALLBACK_COUPONS = {
   'WELCOME10': { type: 'percent', value: 10, label: '10% Off — Welcome Offer' },
   'SAVE20': { type: 'percent', value: 20, label: '20% Off — Seasonal Sale' },
-  'FLAT50': { type: 'flat', value: 50, label: '$50 Off — Premium Deal' },
+  'FLAT50': { type: 'flat', value: 50, label: '₹50 Off — Premium Deal' },
   'FREESHIP': { type: 'shipping', value: 0, label: 'Free Shipping' },
   'TO15': { type: 'percent', value: 15, label: '15% Off — Techorbit Exclusive' },
 };

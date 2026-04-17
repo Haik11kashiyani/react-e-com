@@ -24,7 +24,7 @@ const sortOptions = [
 
 const trustBadges = [
   { icon: Shield, label: '2-Year Warranty', desc: 'Full coverage' },
-  { icon: Truck, label: 'Free Shipping', desc: 'Orders over $99' },
+  { icon: Truck, label: 'Free Shipping', desc: 'Orders over ₹99' },
   { icon: Clock, label: '24/7 Support', desc: 'Always available' },
   { icon: BadgeCheck, label: 'Certified Authentic', desc: '100% genuine' },
 ];
@@ -139,7 +139,7 @@ export default function Products() {
                 <img src={product.image} alt={product.name} />
                 <div className="hero-float-card__info">
                   <span className="hero-float-card__name">{product.name}</span>
-                  <span className="hero-float-card__price">${product.price.toLocaleString()}</span>
+                  <span className="hero-float-card__price">₹{product.price.toLocaleString()}</span>
                 </div>
               </motion.div>
             ))}
@@ -208,7 +208,7 @@ export default function Products() {
                     <div className="trending-card__meta">
                       <Star size={12} fill="#f1c40f" color="#f1c40f" />
                       <span>{product.rating}</span>
-                      <span className="trending-card__price">${product.price.toLocaleString()}</span>
+                      <span className="trending-card__price">₹{product.price.toLocaleString()}</span>
                     </div>
                   </div>
                 </Link>
@@ -326,8 +326,8 @@ export default function Products() {
                     </div>
                     <h3 className="p-card__name">{product.name}</h3>
                     <div className="p-card__price-row">
-                      <span className="p-card__price">${product.price.toLocaleString()}</span>
-                      <span className="p-card__old-price">${product.originalPrice.toLocaleString()}</span>
+                      <span className="p-card__price">₹{product.price.toLocaleString()}</span>
+                      <span className="p-card__old-price">₹{product.originalPrice.toLocaleString()}</span>
                       <span className="p-card__discount">
                         -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
                       </span>
@@ -367,7 +367,7 @@ export default function Products() {
             <span className="promo-badge"><Zap size={14} /> Limited Offer</span>
             <h2 className="promo-title">Up to 30% Off Premium Tech</h2>
             <p className="promo-sub">
-              Free shipping on orders over $99. 2-year warranty included.
+              Free shipping on orders over ₹99. 2-year warranty included.
               Experience technology that defines tomorrow.
             </p>
             <Link to="/products" className="promo-cta">

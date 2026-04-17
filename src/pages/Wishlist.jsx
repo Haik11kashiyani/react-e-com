@@ -78,8 +78,8 @@ export default function Wishlist() {
                   </div>
                   <div className="wishlist-card__bottom">
                     <div className="wishlist-card__price">
-                      <span className="wishlist-card__current">${product.price}</span>
-                      {product.originalPrice && <span className="wishlist-card__original">${product.originalPrice}</span>}
+                      <span className="wishlist-card__current">₹{product.price}</span>
+                      {product.originalPrice && <span className="wishlist-card__original">₹{product.originalPrice}</span>}
                     </div>
                     <button className="pill-btn pill-btn-green pill-btn-sm" onClick={() => handleAddToCart(product)}>
                       <ShoppingCart size={14} /> Add

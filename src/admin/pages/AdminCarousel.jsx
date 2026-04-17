@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Check, Video } from 'lucide-react';
-import { fetchCarouselItems, adminCreateCarouselItem, adminUpdateCarouselItem, adminDeleteCarouselItem } from '../../../utils/api';
-import './AdminLayout.css'; 
+import { fetchCarouselItems, adminCreateCarouselItem, adminUpdateCarouselItem, adminDeleteCarouselItem } from '../../utils/api';
+import '../AdminLayout.css'; 
 
 export default function AdminCarousel() {
   const [items, setItems] = useState([]);

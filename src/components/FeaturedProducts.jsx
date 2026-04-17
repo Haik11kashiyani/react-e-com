@@ -123,8 +123,8 @@ function FeaturedProducts() {
                   </h3>
                   <div className="fp-card__bottom">
                     <div className="fp-card__prices">
-                      <span className="fp-card__price">${product.price.toLocaleString()}</span>
-                      <span className="fp-card__old">${product.originalPrice.toLocaleString()}</span>
+                      <span className="fp-card__price">₹{product.price.toLocaleString()}</span>
+                      <span className="fp-card__old">₹{product.originalPrice.toLocaleString()}</span>
                     </div>
                     <div className="fp-card__actions">
                       <button

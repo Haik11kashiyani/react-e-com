@@ -85,7 +85,7 @@ export default function Cart() {
                       </div>
                     </div>
 
-                    <div className="cart-item__price">${item.price.toFixed(2)}</div>
+                    <div className="cart-item__price">₹{item.price.toFixed(2)}</div>
 
                     <div className="cart-item__qty">
                       <button onClick={() => updateQty(itemId, item.qty - 1)} disabled={item.qty <= 1}>
@@ -97,7 +97,7 @@ export default function Cart() {
                       </button>
                     </div>
 
-                    <div className="cart-item__total">${(item.price * item.qty).toFixed(2)}</div>
+                    <div className="cart-item__total">₹{(item.price * item.qty).toFixed(2)}</div>
 
                     <button className="cart-item__remove" onClick={() => removeFromCart(itemId)}>
                       <Trash2 size={16} />
@@ -123,21 +123,21 @@ export default function Cart() {
                 <div className="cart-summary__rows">
                   <div className="cart-summary__row">
                     <span>Subtotal ({totalItems} items)</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>₹{totalPrice.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="cart-summary__row cart-summary__discount">
                       <span>Discount ({appliedCoupon.code})</span>
-                      <span>-${discount.toFixed(2)}</span>
+                      <span>-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="cart-summary__row">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? <b className="free-ship">FREE</b> : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? <b className="free-ship">FREE</b> : `₹${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="cart-summary__row">
                     <span>Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₹{tax.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -169,7 +169,7 @@ export default function Cart() {
 
                 <div className="cart-summary__total">
                   <span>Total</span>
-                  <span>${grandTotal.toFixed(2)}</span>
+                  <span>₹{grandTotal.toFixed(2)}</span>
                 </div>
 
                 {shipping === 0 && (

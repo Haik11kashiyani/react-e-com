@@ -138,8 +138,8 @@ function CategoryShowcase() {
                           ⭐ {product.rating} ({product.reviews} reviews)
                         </div>
                         <div className="cs-sidebar__product-price">
-                          <span className="price">${product.price}</span>
-                          <span className="original-price">${product.originalPrice}</span>
+                          <span className="price">₹{product.price}</span>
+                          <span className="original-price">₹{product.originalPrice}</span>
                         </div>
                         <motion.button
                           className="cs-sidebar__product-btn"

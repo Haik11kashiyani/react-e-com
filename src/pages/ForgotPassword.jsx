@@ -20,7 +20,8 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     const emailError = validateEmail(email);
@@ -189,28 +190,48 @@ export default function ForgotPassword() {
             {successMessage && <p style={{ color: '#047857', textAlign: 'center', marginBottom: '1rem' }}>{successMessage}</p>}
 
             <form onSubmit={handlePasswordSubmit} className="auth-form">
-              <div className="form-group">
+              <div className="form-group password-group">
                 <label htmlFor="newPassword">New Password</label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => { setNewPassword(e.target.value); setErrors({}); }}
-                  className={errors.newPassword ? 'error' : ''}
-                  placeholder="Enter new password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => { setNewPassword(e.target.value); setErrors({}); }}
+                    className={errors.newPassword ? 'error' : ''}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowPassword(!showPassword)}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
                 {errors.newPassword && <span className="error-message">{errors.newPassword}</span>}
               </div>
-              <div className="form-group">
+              <div className="form-group password-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setErrors({}); }}
-                  className={errors.confirmPassword ? 'error' : ''}
-                  placeholder="Confirm new password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setErrors({}); }}
+                    className={errors.confirmPassword ? 'error' : ''}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
               </div>
               <button type="submit" className="btn-auth" disabled={loading}>

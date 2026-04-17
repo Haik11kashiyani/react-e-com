@@ -204,9 +204,9 @@ export default function ProductDetail() {
 
           <FadeIn delay={0.4}>
             <div className="pd-info__price">
-              <span className="pd-price">${price.toLocaleString()}</span>
-              {originalPrice > price && <span className="pd-old-price">${originalPrice.toLocaleString()}</span>}
-              {originalPrice > price && <span className="pd-save">Save ${(originalPrice - price).toLocaleString()}</span>}
+              <span className="pd-price">₹{price.toLocaleString()}</span>
+              {originalPrice > price && <span className="pd-old-price">₹{originalPrice.toLocaleString()}</span>}
+              {originalPrice > price && <span className="pd-save">Save ₹{(originalPrice - price).toLocaleString()}</span>}
             </div>
           </FadeIn>
 
@@ -260,7 +260,7 @@ export default function ProductDetail() {
                 <Truck size={18} />
                 <div>
                   <strong>Free Shipping</strong>
-                  <span>On orders over $50</span>
+                  <span>On orders over ₹50</span>
                 </div>
               </div>
               <div className="pd-guarantee">
@@ -412,7 +412,7 @@ export default function ProductDetail() {
                   <div className="pd-related__info">
                     <span className="pd-related__brand">{rp.brand}</span>
                     <h4>{rp.name}</h4>
-                    <span className="pd-related__price">${rp.price.toLocaleString()}</span>
+                    <span className="pd-related__price">₹{rp.price.toLocaleString()}</span>
                   </div>
                 </Link>
               </FadeIn>

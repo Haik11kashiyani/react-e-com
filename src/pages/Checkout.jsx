@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div
 import { Link } from 'react-router-dom';
-import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft } from 'lucide-react';
+import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft, Copy } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
 import { validateEmail, validateName, validateRequired } from '../utils/validation';
 import { SplitText, FadeIn, RevealText } from '../components/common/AnimatedComponents';
-import { createOrder } from '../utils/api';
+import { createOrder, updateProfile } from '../utils/api';
 import './Checkout.css';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
 export default function Checkout() {
   const { cart, totalPrice, clearCart, appliedCoupon, discount } = useCart();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -22,6 +24,25 @@ export default function Checkout() {
   const [payment, setPayment] = useState({
     cardName: '', cardNumber: '', expiry: '', cvv: '',
   });
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [saveAddress, setSaveAddress] = useState(false);
+
+  // Load user data on mount
+  useEffect(() => {
+    if (user) {
+      setShipping(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        zip: user.zip || '',
+      }));
+    }
+  }, [user]);
 
   const discountedTotal = totalPrice - discount;
   const shippingCost = discountedTotal > 99 ? 0 : 9.99;
@@ -65,6 +86,9 @@ export default function Checkout() {
   };
 
   const validatePayment = () => {
+    if (paymentMethod === 'cod') {
+      return true;
+    }
     const errs = {};
     errs.cardName = validateRequired(payment.cardName, 'Name on card');
     errs.cardNumber = payment.cardNumber.replace(/\s/g, '').length < 16 ? 'Enter a valid card number' : null;
@@ -103,7 +127,7 @@ export default function Checkout() {
             zip: shipping.zip,
             country: shipping.country,
           },
-          paymentMethod: 'card',
+          paymentMethod: paymentMethod || 'card',
           subtotal: totalPrice,
           discount,
           couponCode: appliedCoupon?.code || '',
@@ -112,6 +136,21 @@ export default function Checkout() {
         };
         const res = await createOrder(orderData);
         setOrderNumber(res.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000));
+        
+        // Save address if user opted in
+        if (saveAddress && user) {
+          try {
+            await updateProfile({
+              address: shipping.address,
+              city: shipping.city,
+              state: shipping.state,
+              zip: shipping.zip,
+              phone: shipping.phone,
+            });
+          } catch (err) {
+            console.log('Address saved to order but failed to save to profile');
+          }
+        }
       } catch {
         setOrderNumber(String(Math.floor(Math.random() * 90000) + 10000));
       }
@@ -218,6 +257,17 @@ export default function Checkout() {
                           {touched.zip && errors.zip && <span className="error-message">{errors.zip}</span>}
                         </div>
                       </div>
+                      {user && (
+                        <div className="checkout-save-address">
+                          <input 
+                            type="checkbox" 
+                            id="saveAddr" 
+                            checked={saveAddress} 
+                            onChange={(e) => setSaveAddress(e.target.checked)}
+                          />
+                          <label htmlFor="saveAddr">Save this address for future orders</label>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -230,33 +280,103 @@ export default function Checkout() {
                       <CreditCard size={20} />
                       <h3>Payment Details</h3>
                     </div>
-                    <div className="checkout-form">
-                      <div className="form-group">
-                        <label>Name on Card</label>
-                        <input name="cardName" value={payment.cardName} onChange={handlePaymentChange} className={touched.cardName && errors.cardName ? 'error' : ''} placeholder="John Doe" />
-                        {touched.cardName && errors.cardName && <span className="error-message">{errors.cardName}</span>}
-                      </div>
-                      <div className="form-group">
-                        <label>Card Number</label>
-                        <input name="cardNumber" value={payment.cardNumber} onChange={handlePaymentChange} className={touched.cardNumber && errors.cardNumber ? 'error' : ''} placeholder="4242 4242 4242 4242" />
-                        {touched.cardNumber && errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
-                      </div>
-                      <div className="checkout-form__row">
-                        <div className="form-group">
-                          <label>Expiry Date</label>
-                          <input name="expiry" value={payment.expiry} onChange={handlePaymentChange} className={touched.expiry && errors.expiry ? 'error' : ''} placeholder="MM/YY" />
-                          {touched.expiry && errors.expiry && <span className="error-message">{errors.expiry}</span>}
-                        </div>
-                        <div className="form-group">
-                          <label>CVV</label>
-                          <input name="cvv" value={payment.cvv} onChange={handlePaymentChange} className={touched.cvv && errors.cvv ? 'error' : ''} placeholder="123" />
-                          {touched.cvv && errors.cvv && <span className="error-message">{errors.cvv}</span>}
-                        </div>
-                      </div>
+                    
+                    {/* Payment Method Selection */}
+                    <div className="checkout-payment-methods">
+                      <label className="payment-method-option">
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="card" 
+                          checked={paymentMethod === 'card'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <CreditCard size={18} />
+                        <span className="payment-method-label">Credit/Debit Card</span>
+                      </label>
+                      <label className="payment-method-option">
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="cod" 
+                          checked={paymentMethod === 'cod'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <Truck size={18} />
+                        <span className="payment-method-label">Cash on Delivery</span>
+                      </label>
                     </div>
-                    <div className="checkout-secure-note">
-                      <ShieldCheck size={14} /> Your payment information is secure and encrypted
-                    </div>
+
+                    {paymentMethod === 'card' && (
+                      <>
+                        <div className="checkout-form">
+                          <div className="form-group">
+                            <label>Name on Card</label>
+                            <input name="cardName" value={payment.cardName} onChange={handlePaymentChange} className={touched.cardName && errors.cardName ? 'error' : ''} placeholder="John Doe" />
+                            {touched.cardName && errors.cardName && <span className="error-message">{errors.cardName}</span>}
+                          </div>
+                          <div className="form-group">
+                            <label>Card Number</label>
+                            <input name="cardNumber" value={payment.cardNumber} onChange={handlePaymentChange} className={touched.cardNumber && errors.cardNumber ? 'error' : ''} placeholder="4242 4242 4242 4242" />
+                            {touched.cardNumber && errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
+                          </div>
+                          <div className="checkout-form__row">
+                            <div className="form-group">
+                              <label>Expiry Date</label>
+                              <input name="expiry" value={payment.expiry} onChange={handlePaymentChange} className={touched.expiry && errors.expiry ? 'error' : ''} placeholder="MM/YY" />
+                              {touched.expiry && errors.expiry && <span className="error-message">{errors.expiry}</span>}
+                            </div>
+                            <div className="form-group">
+                              <label>CVV</label>
+                              <input name="cvv" value={payment.cvv} onChange={handlePaymentChange} className={touched.cvv && errors.cvv ? 'error' : ''} placeholder="123" />
+                              {touched.cvv && errors.cvv && <span className="error-message">{errors.cvv}</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="checkout-secure-note">
+                          <ShieldCheck size={14} /> Your payment information is secure and encrypted
+                        </div>
+                      </>
+                    )}
+
+                    {paymentMethod === 'cod' && (
+                      <>
+                        <div className="checkout-form">
+                          <div className="cod-info" style={{ 
+                            background: 'rgba(34, 160, 107, 0.08)', 
+                            border: '2px solid rgba(34, 160, 107, 0.2)', 
+                            borderRadius: '12px', 
+                            padding: '20px',
+                            marginTop: '20px'
+                          }}>
+                            <h4 style={{ margin: '0 0 10px 0', color: '#22a06b', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Truck size={20} style={{ color: '#22a06b' }} />
+                              Cash on Delivery
+                            </h4>
+                            <p style={{ margin: '8px 0', fontSize: '14px', color: '#666', lineHeight: '1.5' }}>
+                              Pay when your order arrives at your doorstep. No need to enter card details now.
+                            </p>
+                            <p style={{ margin: '8px 0', fontSize: '13px', color: '#999' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                <Check size={16} style={{ color: '#22a06b' }} />
+                                <span>Secure & Convenient</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                <Check size={16} style={{ color: '#22a06b' }} />
+                                <span>Pay after inspection</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Check size={16} style={{ color: '#22a06b' }} />
+                                <span>Applicable for select locations</span>
+                              </div>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="checkout-secure-note">
+                          <ShieldCheck size={14} /> Your order is secure and encrypted
+                        </div>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -310,23 +430,23 @@ export default function Checkout() {
                       </div>
                       <div className="checkout-summary__item-info">
                         <span className="checkout-summary__item-name">{item.name}</span>
-                        <span className="checkout-summary__item-price">${(item.price * item.qty).toFixed(2)}</span>
+                        <span className="checkout-summary__item-price">₹{(item.price * item.qty).toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 <div className="checkout-summary__rows">
-                  <div className="checkout-summary__row"><span>Subtotal</span><span>${totalPrice.toFixed(2)}</span></div>
+                  <div className="checkout-summary__row"><span>Subtotal</span><span>₹{totalPrice.toFixed(2)}</span></div>
                   {discount > 0 && (
                     <div className="checkout-summary__row" style={{ color: '#22a06b' }}>
-                      <span>Discount ({appliedCoupon})</span><span>-${discount.toFixed(2)}</span>
+                      <span>Discount ({appliedCoupon?.code})</span><span>-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="checkout-summary__row"><span>Shipping</span><span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span></div>
-                  <div className="checkout-summary__row"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
+                  <div className="checkout-summary__row"><span>Shipping</span><span>{shippingCost === 0 ? 'FREE' : `₹${shippingCost.toFixed(2)}`}</span></div>
+                  <div className="checkout-summary__row"><span>Tax</span><span>₹{tax.toFixed(2)}</span></div>
                 </div>
                 <div className="checkout-summary__total">
-                  <span>Total</span><span>${grandTotal.toFixed(2)}</span>
+                  <span>Total</span><span>₹{grandTotal.toFixed(2)}</span>
                 </div>
               </div>
             </FadeIn>

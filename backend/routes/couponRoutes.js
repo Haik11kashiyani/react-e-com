@@ -5,6 +5,6 @@ import auth from "../middleware/auth.js";
 const router = express.Router();
 
 router.post("/validate", validateCoupon);
-router.get("/", auth, getCoupons);
+router.get("/", getCoupons);
 
 export default router;

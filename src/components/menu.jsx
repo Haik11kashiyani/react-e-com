@@ -66,12 +66,21 @@ function MenuBar() {
               <ShoppingCart size={18} />
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
             </Link>
-            <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+            {user ? (
+              <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
                 <button className="btn btn-join">
-                <span>Join</span>
-                <span>Join</span>
+                  <span>Profile</span>
+                  <span>Profile</span>
                 </button>
-            </Link>
+              </Link>
+            ) : (
+              <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                <button className="btn btn-join">
+                  <span>Join</span>
+                  <span>Join</span>
+                </button>
+              </Link>
+            )}
           </div>
       </div>
 

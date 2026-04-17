@@ -40,11 +40,15 @@ const AdminOrders = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
+      const token = localStorage.getItem('techorbit_token');
+      console.log('Admin token exists:', !!token);
+      console.log('Updating order:', orderId, 'to status:', newStatus);
       await updateOrderStatus(orderId, newStatus);
       showToast(`Order status updated to ${newStatus}`);
       loadOrders();
-    } catch {
-      showToast('Failed to update status', 'error');
+    } catch (err) {
+      console.error('Status update error:', err.response?.data || err.message);
+      showToast(err.response?.data?.message || 'Failed to update status', 'error');
     }
   };
 
@@ -133,7 +137,7 @@ const AdminOrders = () => {
                   <td>
                     <select
                       className="admin-status-select"
-                      value={order.status}
+                      value={order.status || 'pending'}
                       onChange={e => { e.stopPropagation(); handleStatusChange(order._id, e.target.value); }}
                       onClick={e => e.stopPropagation()}
                     >

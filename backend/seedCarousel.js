@@ -6,7 +6,7 @@ dotenv.config();
 
 const seedCarousel = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/techorbit');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/db_techorbit');
     
     // Clear existing
     await CarouselItem.deleteMany({});

@@ -15,7 +15,7 @@ const stats = [
 const badges = [
   { icon: Zap, text: 'Same Day Delivery' },
   { icon: Shield, text: '2-Year Warranty' },
-  { icon: Truck, text: 'Free Shipping $99+' },
+  { icon: Truck, text: 'Free Shipping ₹99+' },
 ];
 
 function HeroSec() {
@@ -55,7 +55,7 @@ function HeroSec() {
             <React.Fragment key={setIdx}>
               <span>New Arrivals Available</span>
               <span className="hero-marquee-dot">&#x2022;</span>
-              <span>Free Shipping on $99+</span>
+              <span>Free Shipping on ₹99+</span>
               <span className="hero-marquee-dot">&#x2022;</span>
               <span>Premium Tech Curated For You</span>
               <span className="hero-marquee-dot">&#x2022;</span>
@@ -170,7 +170,7 @@ function HeroSec() {
                           <Star size={13} fill="#FFB800" stroke="#FFB800" />
                           <span>{current.rating}</span>
                         </div>
-                        <span className="hero-product-price">${Number(current.price || 0).toLocaleString()}</span>
+                        <span className="hero-product-price">₹{Number(current.price || 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </motion.div>
