@@ -78,6 +78,11 @@ export const createOrder = (data) => api.post('/orders', data);
 export const fetchMyOrders = () => api.get('/orders');
 export const fetchOrderById = (id) => api.get(`/orders/${id}`);
 
+// ─── Stripe Payments ─────────────────────────────────
+export const getStripeKey = () => api.get('/orders/stripe-key');
+export const createPaymentIntent = (data) => api.post('/orders/create-payment-intent', data);
+export const confirmStripePayment = (data) => api.post('/orders/confirm-payment', data);
+
 // ─── Reviews / Testimonials ─────────────────────────
 export const fetchTestimonials = () => api.get('/reviews/testimonials');
 export const fetchReviews = (params) => api.get('/reviews', { params });
@@ -89,6 +94,9 @@ export const fetchCoupons = () => api.get('/coupons');
 
 // ─── Contact ─────────────────────────────────────────
 export const submitContactForm = (data) => api.post('/contact', data);
+
+// ─── Public Stats (no auth) ─────────────────────────
+export const fetchPublicStats = () => api.get('/public/stats');
 
 // ─── Admin ───────────────────────────────────────────
 export const fetchAdminStats = () => api.get('/admin/stats');

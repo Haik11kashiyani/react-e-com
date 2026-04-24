@@ -37,8 +37,17 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["card", "paypal", "cod"],
+      enum: ["card", "paypal", "cod", "stripe"],
       default: "card",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
     },
     subtotal: {
       type: Number,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, ArrowLeft, Send, CheckCircle, KeyRound } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Send, CheckCircle, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { validateEmail, validatePassword, validateConfirmPassword } from '../utils/validation';
 import {
   requestAdminPasswordResetOtp,
@@ -20,6 +20,8 @@ export default function AdminForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const clearMessages = () => {
     setServerError('');
@@ -217,27 +219,37 @@ export default function AdminForgotPassword() {
             <form onSubmit={handlePasswordSubmit} className="auth-form">
               <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => { setNewPassword(e.target.value); setErrors({}); }}
-                  className={errors.newPassword ? 'error' : ''}
-                  placeholder="Enter new password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => { setNewPassword(e.target.value); setErrors({}); }}
+                    className={errors.newPassword ? 'error' : ''}
+                    placeholder="Enter new password"
+                  />
+                  <button type="button" className="toggle-password" onClick={() => setShowNewPassword(v => !v)} tabIndex={-1}>
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.newPassword && <span className="error-message">{errors.newPassword}</span>}
               </div>
 
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setErrors({}); }}
-                  className={errors.confirmPassword ? 'error' : ''}
-                  placeholder="Confirm new password"
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setErrors({}); }}
+                    className={errors.confirmPassword ? 'error' : ''}
+                    placeholder="Confirm new password"
+                  />
+                  <button type="button" className="toggle-password" onClick={() => setShowConfirmPassword(v => !v)} tabIndex={-1}>
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
               </div>
 

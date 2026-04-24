@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion.div in JSX
 import { Users, Award, Globe, Zap, Heart, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SplitText, FadeIn, RevealText, ScaleIn, HorizontalLine, StaggerContainer } from '../components/common/AnimatedComponents';
 import { staggerItem } from '../components/common/animationVariants';
 import { useCountUp } from '../hooks/useAnimations';
+import { fetchPublicStats } from '../utils/api';
 import './About.css';
 
 const values = [
@@ -32,6 +33,19 @@ function StatCounter({ end, suffix = '', label }) {
 }
 
 export default function About() {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    fetchPublicStats()
+      .then((res) => setStats(res.data.stats))
+      .catch(() => {});
+  }, []);
+
+  const totalUsers = stats?.totalUsers || 500;
+  const totalProducts = stats?.totalProducts || 50;
+  const totalOrders = stats?.totalOrders || 100;
+  const satisfactionRate = stats?.totalReviews ? Math.min(99, Math.round((stats.totalReviews / (stats.totalOrders || 1)) * 20 + 80)) : 99;
+
   return (
     <div className="about-page">
       {/* Hero */}
@@ -58,10 +72,10 @@ export default function About() {
 
       {/* Stats */}
       <section className="about-stats">
-        <StatCounter end={50000} suffix="+" label="Happy Customers" />
-        <StatCounter end={500} suffix="+" label="Products Curated" />
-        <StatCounter end={50} suffix="+" label="Countries Served" />
-        <StatCounter end={99} suffix="%" label="Satisfaction Rate" />
+        <StatCounter end={totalUsers} suffix="+" label="Happy Customers" />
+        <StatCounter end={totalProducts} suffix="+" label="Products Curated" />
+        <StatCounter end={totalOrders} suffix="+" label="Orders Delivered" />
+        <StatCounter end={satisfactionRate} suffix="%" label="Satisfaction Rate" />
       </section>
 
       <HorizontalLine />

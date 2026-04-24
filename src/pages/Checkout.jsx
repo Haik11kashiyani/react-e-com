@@ -1,17 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line -- motion used as motion.div
 import { Link } from 'react-router-dom';
-import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft, Copy } from 'lucide-react';
+import { CreditCard, Truck, ShieldCheck, Check, MapPin, ArrowLeft, Wallet } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../hooks/useCart';
 import useAuth from '../hooks/useAuth';
 import { validateEmail, validateName, validateRequired } from '../utils/validation';
-import { SplitText, FadeIn, RevealText } from '../components/common/AnimatedComponents';
-import { createOrder, updateProfile } from '../utils/api';
+import { SplitText, FadeIn } from '../components/common/AnimatedComponents';
+import { createOrder, updateProfile, createPaymentIntent, confirmStripePayment, getStripeKey } from '../utils/api';
 import './Checkout.css';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
-export default function Checkout() {
+// Stripe CardElement styling to match site theme
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      fontSize: '15px',
+      color: '#0e0e0e',
+      fontFamily: '"Inter", sans-serif',
+      '::placeholder': { color: '#999' },
+      padding: '12px',
+    },
+    invalid: { color: '#e53e3e' },
+  },
+  hidePostalCode: true,
+};
+
+// Inner checkout form — must be inside <Elements> for Stripe hooks
+function CheckoutForm({ stripeReady }) {
+  const stripe = useStripe();
+  const elements = useElements();
   const { cart, totalPrice, clearCart, appliedCoupon, discount } = useCart();
   const { user } = useAuth();
   const [step, setStep] = useState(0);
@@ -19,15 +39,14 @@ export default function Checkout() {
   const [touched, setTouched] = useState({});
 
   const [shipping, setShipping] = useState({
-    firstName: '', lastName: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'US',
+    firstName: '', lastName: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'IN',
   });
   const [payment, setPayment] = useState({
     cardName: '', cardNumber: '', expiry: '', cvv: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [saveAddress, setSaveAddress] = useState(false);
 
-  // Load user data on mount
   useEffect(() => {
     if (user) {
       setShipping(prev => ({
@@ -57,15 +76,9 @@ export default function Checkout() {
 
   const handlePaymentChange = (e) => {
     let { name, value } = e.target;
-    if (name === 'cardNumber') {
-      value = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
-    }
-    if (name === 'expiry') {
-      value = value.replace(/\D/g, '').replace(/^(.{2})/, '$1/').slice(0, 5);
-    }
-    if (name === 'cvv') {
-      value = value.replace(/\D/g, '').slice(0, 4);
-    }
+    if (name === 'cardNumber') value = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
+    if (name === 'expiry') value = value.replace(/\D/g, '').replace(/^(.{2})/, '$1/').slice(0, 5);
+    if (name === 'cvv') value = value.replace(/\D/g, '').slice(0, 4);
     setPayment((p) => ({ ...p, [name]: value }));
     if (errors[name]) setErrors((p) => ({ ...p, [name]: null }));
   };
@@ -86,9 +99,7 @@ export default function Checkout() {
   };
 
   const validatePayment = () => {
-    if (paymentMethod === 'cod') {
-      return true;
-    }
+    if (paymentMethod === 'cod' || paymentMethod === 'stripe') return true;
     const errs = {};
     errs.cardName = validateRequired(payment.cardName, 'Name on card');
     errs.cardNumber = payment.cardNumber.replace(/\s/g, '').length < 16 ? 'Enter a valid card number' : null;
@@ -101,61 +112,135 @@ export default function Checkout() {
 
   const [orderNumber, setOrderNumber] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
+  const [stripeError, setStripeError] = useState('');
+
+  const buildOrderItems = useCallback(() => cart.map((item) => ({
+    product: item._id || item.id,
+    name: item.name,
+    price: item.price,
+    qty: item.qty,
+    image: item.image,
+  })), [cart]);
+
+  const handleStripePayment = async () => {
+    if (!stripe || !elements) {
+      setStripeError('Payment system is loading. Please wait...');
+      return false;
+    }
+
+    setStripeError('');
+    const orderItems = buildOrderItems();
+
+    // Step 1: Create payment intent on backend
+    let clientSecret;
+    try {
+      const res = await createPaymentIntent({
+        amount: grandTotal,
+        currency: 'inr',
+        items: orderItems,
+        shippingAddress: shipping,
+        subtotal: totalPrice,
+        discount,
+        couponCode: appliedCoupon?.code || '',
+        shipping: shippingCost,
+      });
+      clientSecret = res.data.clientSecret;
+    } catch (err) {
+      setStripeError(err.response?.data?.message || 'Failed to initialize payment');
+      return false;
+    }
+
+    // Step 2: Confirm card payment via Stripe (card data stays in Stripe iframe)
+    const cardElement = elements.getElement(CardElement);
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: {
+          name: `${shipping.firstName} ${shipping.lastName}`,
+          email: shipping.email,
+          phone: shipping.phone,
+          address: {
+            line1: shipping.address,
+            city: shipping.city,
+            state: shipping.state,
+            postal_code: shipping.zip,
+            country: shipping.country,
+          },
+        },
+      },
+    });
+
+    if (error) {
+      setStripeError(error.message);
+      return false;
+    }
+
+    if (paymentIntent.status !== 'succeeded') {
+      setStripeError('Payment was not completed. Please try again.');
+      return false;
+    }
+
+    // Step 3: Confirm on backend and create order
+    try {
+      const confirmRes = await confirmStripePayment({
+        paymentIntentId: paymentIntent.id,
+        items: orderItems,
+        shippingAddress: shipping,
+        subtotal: totalPrice,
+        discount,
+        couponCode: appliedCoupon?.code || '',
+        shipping: shippingCost,
+        total: grandTotal,
+      });
+      return confirmRes.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000);
+    } catch (err) {
+      setStripeError('Payment succeeded but order creation failed. Please contact support.');
+      return false;
+    }
+  };
 
   const handleNext = async () => {
     if (step === 0 && validateShipping()) {
       setErrors({}); setTouched({}); setStep(1);
     } else if (step === 1 && validatePayment()) {
       setOrderLoading(true);
+      setStripeError('');
+
       try {
-        const orderData = {
-          items: cart.map((item) => ({
-            product: item._id || item.id,
-            name: item.name,
-            price: item.price,
-            qty: item.qty,
-            image: item.image,
-          })),
-          shippingAddress: {
-            firstName: shipping.firstName,
-            lastName: shipping.lastName,
-            email: shipping.email,
-            phone: shipping.phone,
-            address: shipping.address,
-            city: shipping.city,
-            state: shipping.state,
-            zip: shipping.zip,
-            country: shipping.country,
-          },
-          paymentMethod: paymentMethod || 'card',
-          subtotal: totalPrice,
-          discount,
-          couponCode: appliedCoupon?.code || '',
-          shipping: shippingCost,
-          total: grandTotal,
-        };
-        const res = await createOrder(orderData);
-        setOrderNumber(res.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000));
-        
-        // Save address if user opted in
-        if (saveAddress && user) {
-          try {
-            await updateProfile({
-              address: shipping.address,
-              city: shipping.city,
-              state: shipping.state,
-              zip: shipping.zip,
-              phone: shipping.phone,
-            });
-          } catch (err) {
-            console.log('Address saved to order but failed to save to profile');
+        if (paymentMethod === 'stripe') {
+          const result = await handleStripePayment();
+          if (result) {
+            setOrderNumber(result);
+            if (saveAddress && user) {
+              try { await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone }); } catch { /* silent */ }
+            }
+            setErrors({}); setTouched({}); setStep(2); clearCart();
           }
+        } else {
+          // COD or manual card flow
+          const orderData = {
+            items: buildOrderItems(),
+            shippingAddress: shipping,
+            paymentMethod: paymentMethod || 'card',
+            subtotal: totalPrice,
+            discount,
+            couponCode: appliedCoupon?.code || '',
+            shipping: shippingCost,
+            total: grandTotal,
+          };
+          const res = await createOrder(orderData);
+          setOrderNumber(res.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000));
+          if (saveAddress && user) {
+            try { await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone }); } catch { /* silent */ }
+          }
+          setErrors({}); setTouched({}); setStep(2); clearCart();
         }
       } catch {
         setOrderNumber(String(Math.floor(Math.random() * 90000) + 10000));
+        setErrors({}); setTouched({}); setStep(2); clearCart();
       }
+
       setOrderLoading(false);
-      setErrors({}); setTouched({}); setStep(2); clearCart();
     }
   };
 
@@ -231,7 +316,7 @@ export default function Checkout() {
                         </div>
                         <div className="form-group">
                           <label>Phone</label>
-                          <input name="phone" value={shipping.phone} onChange={handleShippingChange} className={touched.phone && errors.phone ? 'error' : ''} placeholder="+1 (555) 000-0000" />
+                          <input name="phone" value={shipping.phone} onChange={handleShippingChange} className={touched.phone && errors.phone ? 'error' : ''} placeholder="+91 98765 43210" />
                           {touched.phone && errors.phone && <span className="error-message">{errors.phone}</span>}
                         </div>
                       </div>
@@ -243,28 +328,23 @@ export default function Checkout() {
                       <div className="checkout-form__row checkout-form__row-3">
                         <div className="form-group">
                           <label>City</label>
-                          <input name="city" value={shipping.city} onChange={handleShippingChange} className={touched.city && errors.city ? 'error' : ''} placeholder="San Francisco" />
+                          <input name="city" value={shipping.city} onChange={handleShippingChange} className={touched.city && errors.city ? 'error' : ''} placeholder="Mumbai" />
                           {touched.city && errors.city && <span className="error-message">{errors.city}</span>}
                         </div>
                         <div className="form-group">
                           <label>State</label>
-                          <input name="state" value={shipping.state} onChange={handleShippingChange} className={touched.state && errors.state ? 'error' : ''} placeholder="CA" />
+                          <input name="state" value={shipping.state} onChange={handleShippingChange} className={touched.state && errors.state ? 'error' : ''} placeholder="MH" />
                           {touched.state && errors.state && <span className="error-message">{errors.state}</span>}
                         </div>
                         <div className="form-group">
                           <label>ZIP Code</label>
-                          <input name="zip" value={shipping.zip} onChange={handleShippingChange} className={touched.zip && errors.zip ? 'error' : ''} placeholder="94105" />
+                          <input name="zip" value={shipping.zip} onChange={handleShippingChange} className={touched.zip && errors.zip ? 'error' : ''} placeholder="400001" />
                           {touched.zip && errors.zip && <span className="error-message">{errors.zip}</span>}
                         </div>
                       </div>
                       {user && (
                         <div className="checkout-save-address">
-                          <input 
-                            type="checkbox" 
-                            id="saveAddr" 
-                            checked={saveAddress} 
-                            onChange={(e) => setSaveAddress(e.target.checked)}
-                          />
+                          <input type="checkbox" id="saveAddr" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
                           <label htmlFor="saveAddr">Save this address for future orders</label>
                         </div>
                       )}
@@ -280,61 +360,42 @@ export default function Checkout() {
                       <CreditCard size={20} />
                       <h3>Payment Details</h3>
                     </div>
-                    
+
                     {/* Payment Method Selection */}
                     <div className="checkout-payment-methods">
-                      <label className="payment-method-option">
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="card" 
-                          checked={paymentMethod === 'card'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <CreditCard size={18} />
-                        <span className="payment-method-label">Credit/Debit Card</span>
+                      <label className={`payment-method-option ${paymentMethod === 'stripe' ? 'selected' : ''}`}>
+                        <input type="radio" name="paymentMethod" value="stripe" checked={paymentMethod === 'stripe'} onChange={(e) => setPaymentMethod(e.target.value)} />
+                        <Wallet size={18} />
+                        <span className="payment-method-label">Pay Online</span>
+                        <span className="stripe-badge">Stripe 🔒</span>
                       </label>
-                      <label className="payment-method-option">
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          value="cod" 
-                          checked={paymentMethod === 'cod'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
+                      <label className={`payment-method-option ${paymentMethod === 'cod' ? 'selected' : ''}`}>
+                        <input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === 'cod'} onChange={(e) => setPaymentMethod(e.target.value)} />
                         <Truck size={18} />
                         <span className="payment-method-label">Cash on Delivery</span>
                       </label>
                     </div>
 
-                    {paymentMethod === 'card' && (
+                    {paymentMethod === 'stripe' && (
                       <>
                         <div className="checkout-form">
-                          <div className="form-group">
-                            <label>Name on Card</label>
-                            <input name="cardName" value={payment.cardName} onChange={handlePaymentChange} className={touched.cardName && errors.cardName ? 'error' : ''} placeholder="John Doe" />
-                            {touched.cardName && errors.cardName && <span className="error-message">{errors.cardName}</span>}
-                          </div>
-                          <div className="form-group">
-                            <label>Card Number</label>
-                            <input name="cardNumber" value={payment.cardNumber} onChange={handlePaymentChange} className={touched.cardNumber && errors.cardNumber ? 'error' : ''} placeholder="4242 4242 4242 4242" />
-                            {touched.cardNumber && errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
-                          </div>
-                          <div className="checkout-form__row">
-                            <div className="form-group">
-                              <label>Expiry Date</label>
-                              <input name="expiry" value={payment.expiry} onChange={handlePaymentChange} className={touched.expiry && errors.expiry ? 'error' : ''} placeholder="MM/YY" />
-                              {touched.expiry && errors.expiry && <span className="error-message">{errors.expiry}</span>}
+                          <div className="stripe-card-wrapper">
+                            <label className="stripe-card-label">Card Details</label>
+                            <div className="stripe-card-element">
+                              <CardElement options={CARD_ELEMENT_OPTIONS} />
                             </div>
-                            <div className="form-group">
-                              <label>CVV</label>
-                              <input name="cvv" value={payment.cvv} onChange={handlePaymentChange} className={touched.cvv && errors.cvv ? 'error' : ''} placeholder="123" />
-                              {touched.cvv && errors.cvv && <span className="error-message">{errors.cvv}</span>}
-                            </div>
+                            <p className="stripe-card-hint">
+                              🧪 Test card: <code>4242 4242 4242 4242</code> · Any future date · Any CVC
+                            </p>
                           </div>
+                          {stripeError && (
+                            <div className="stripe-error-message">
+                              ⚠️ {stripeError}
+                            </div>
+                          )}
                         </div>
                         <div className="checkout-secure-note">
-                          <ShieldCheck size={14} /> Your payment information is secure and encrypted
+                          <ShieldCheck size={14} /> Card data is encrypted by Stripe — it never touches our servers
                         </div>
                       </>
                     )}
@@ -342,34 +403,25 @@ export default function Checkout() {
                     {paymentMethod === 'cod' && (
                       <>
                         <div className="checkout-form">
-                          <div className="cod-info" style={{ 
-                            background: 'rgba(34, 160, 107, 0.08)', 
-                            border: '2px solid rgba(34, 160, 107, 0.2)', 
-                            borderRadius: '12px', 
-                            padding: '20px',
-                            marginTop: '20px'
-                          }}>
+                          <div className="cod-info" style={{ background: 'rgba(34, 160, 107, 0.08)', border: '2px solid rgba(34, 160, 107, 0.2)', borderRadius: '12px', padding: '20px', marginTop: '20px' }}>
                             <h4 style={{ margin: '0 0 10px 0', color: '#22a06b', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <Truck size={20} style={{ color: '#22a06b' }} />
                               Cash on Delivery
                             </h4>
                             <p style={{ margin: '8px 0', fontSize: '14px', color: '#666', lineHeight: '1.5' }}>
-                              Pay when your order arrives at your doorstep. No need to enter card details now.
+                              Pay when your order arrives at your doorstep.
                             </p>
-                            <p style={{ margin: '8px 0', fontSize: '13px', color: '#999' }}>
+                            <div style={{ fontSize: '13px', color: '#999' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                                <Check size={16} style={{ color: '#22a06b' }} />
-                                <span>Secure & Convenient</span>
+                                <Check size={16} style={{ color: '#22a06b' }} /><span>Secure & Convenient</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                                <Check size={16} style={{ color: '#22a06b' }} />
-                                <span>Pay after inspection</span>
+                                <Check size={16} style={{ color: '#22a06b' }} /><span>Pay after inspection</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Check size={16} style={{ color: '#22a06b' }} />
-                                <span>Applicable for select locations</span>
+                                <Check size={16} style={{ color: '#22a06b' }} /><span>Applicable for select locations</span>
                               </div>
-                            </p>
+                            </div>
                           </div>
                         </div>
                         <div className="checkout-secure-note">
@@ -384,9 +436,7 @@ export default function Checkout() {
               {step === 2 && (
                 <motion.div key="confirmation" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
                   <div className="checkout-confirmation">
-                    <div className="checkout-confirmation__icon">
-                      <Check size={32} />
-                    </div>
+                    <div className="checkout-confirmation__icon"><Check size={32} /></div>
                     <h2>Order Confirmed!</h2>
                     <p className="checkout-confirmation__order">Order #TO{orderNumber}</p>
                     <p className="checkout-confirmation__msg">
@@ -410,7 +460,7 @@ export default function Checkout() {
                   </button>
                 )}
                 <button className="pill-btn pill-btn-primary" onClick={handleNext} disabled={orderLoading}>
-                  {orderLoading ? 'Placing Order...' : step === 1 ? 'Place Order' : 'Continue to Payment'}
+                  {orderLoading ? 'Processing...' : step === 1 ? (paymentMethod === 'stripe' ? '🔒 Pay ₹' + grandTotal.toFixed(2) : 'Place Order') : 'Continue to Payment'}
                 </button>
               </div>
             )}
@@ -454,5 +504,37 @@ export default function Checkout() {
         </div>
       </section>
     </div>
+  );
+}
+
+// Wrapper component that loads Stripe and wraps CheckoutForm in <Elements>
+export default function Checkout() {
+  const [stripePromise, setStripePromise] = useState(null);
+
+  useEffect(() => {
+    getStripeKey()
+      .then((res) => {
+        if (res.data.publishableKey) {
+          setStripePromise(loadStripe(res.data.publishableKey));
+        }
+      })
+      .catch(() => {
+        // Fallback: load with hardcoded test key
+        setStripePromise(loadStripe('pk_test_51TPatdD1YYoFPUKlV54m3huqSnkz4rXEPb6MWBrTQlyP6JMfkNomvF4ob2cqdcCuzlZhHdPZLCDoUDCa6KJZNn1z00qVJM1wyP'));
+      });
+  }, []);
+
+  if (!stripePromise) {
+    return (
+      <div className="checkout-page" style={{ paddingTop: '200px', textAlign: 'center' }}>
+        <p style={{ opacity: 0.6 }}>Loading secure payment...</p>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
   );
 }

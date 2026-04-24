@@ -86,6 +86,7 @@ export const getDashboardStats = async (req, res) => {
             _id: "$items.product",
             totalSold: { $sum: "$items.qty" },
             revenue: { $sum: { $multiply: ["$items.price", "$items.qty"] } },
+            orderItemName: { $first: "$items.name" },
           },
         },
         { $sort: { totalSold: -1 } },
@@ -98,12 +99,16 @@ export const getDashboardStats = async (req, res) => {
             as: "product",
           },
         },
-        { $unwind: "$product" },
         {
           $project: {
             _id: 0,
-            productId: "$product._id",
-            name: "$product.name",
+            productId: "$_id",
+            name: {
+              $ifNull: [
+                { $arrayElemAt: ["$product.name", 0] },
+                { $ifNull: ["$orderItemName", "Unknown Product"] },
+              ],
+            },
             totalSold: 1,
             revenue: 1,
           },
@@ -452,6 +457,27 @@ export const deleteContact = async (req, res) => {
     res.json({ success: true, message: "Contact message deleted" });
   } catch (error) {
     console.error("deleteContact error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ─── Public Stats (no auth required) ─────────────────
+export const getPublicStats = async (req, res) => {
+  try {
+    const [totalUsers, totalProducts, totalOrders, totalReviews] =
+      await Promise.all([
+        User.countDocuments(),
+        Product.countDocuments(),
+        Order.countDocuments(),
+        Review.countDocuments(),
+      ]);
+
+    res.json({
+      success: true,
+      stats: { totalUsers, totalProducts, totalOrders, totalReviews },
+    });
+  } catch (error) {
+    console.error("getPublicStats error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

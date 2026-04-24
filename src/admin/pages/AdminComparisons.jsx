@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Check, X, Award } from 'lucide-react';
 import { fetchComparisons, adminCreateComparison, adminUpdateComparison, adminDeleteComparison } from '../../utils/api';
-import '../AdminLayout.css'; // Inheriting shared admin styles
+import '../admin.css'; // Inheriting shared admin styles
 
 export default function AdminComparisons() {
   const [comparisons, setComparisons] = useState([]);

@@ -13,6 +13,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import comparisonRoutes from "./routes/comparisonRoutes.js";
 import carouselRoutes from "./routes/carouselRoutes.js";
+import { getPublicStats } from "./controller/adminController.js";
 import process from "process";
 
 dotenv.config();
@@ -67,6 +68,9 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/comparisons", comparisonRoutes);
 app.use("/api/carousel", carouselRoutes);
+
+// Public stats endpoint (no auth)
+app.get("/api/public/stats", getPublicStats);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

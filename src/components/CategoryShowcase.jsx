@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion'; // eslint-disable-line
 import { X, ChevronRight } from 'lucide-react';
 import './CategoryShowcase.css';
-import { allProducts } from '../data/products';
+import { fetchProducts } from '../utils/api';
 
 const categoryShowcaseData = [
   {
@@ -28,10 +29,10 @@ const categoryShowcaseData = [
   },
   {
     id: 'audio',
-    name: '4K Displays',
-    description: 'Crystal clear visuals for immersive viewing',
+    name: 'Premium Audio',
+    description: 'Immersive sound with industry-leading noise cancellation',
     image: 'https://images.unsplash.com/photo-1593642532400-2682a8a6b979?w=800&h=600&fit=crop',
-    icon: '📺',
+    icon: '🎧',
   },
   {
     id: 'tablet',
@@ -44,6 +45,14 @@ const categoryShowcaseData = [
 
 function CategoryShowcase() {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchProducts()
+      .then((res) => setAllProducts(res.data.products || []))
+      .catch(() => setAllProducts([]));
+  }, []);
 
   const getProductsByCategory = (categoryId) => {
     return allProducts.filter((p) => p.category === categoryId).slice(0, 6);
@@ -103,7 +112,7 @@ function CategoryShowcase() {
       {selectedCategory && (
         <>
           <div className="cs-sidebar-overlay" onClick={() => setSelectedCategory(null)} />
-          <div className="cs-sidebar">
+          <div className="cs-sidebar" onClick={(e) => e.stopPropagation()}>
             <button className="cs-sidebar__close" onClick={() => setSelectedCategory(null)}>
               <X size={24} />
             </button>
@@ -111,7 +120,7 @@ function CategoryShowcase() {
             <div className="cs-sidebar__header">
               <div className="cs-sidebar__icon">{selectedCategory.icon}</div>
               <h2 className="cs-sidebar__title">{selectedCategory.name}</h2>
-              <p className="cs-sidebar__description">{selectedCategory.description}</p>
+              <p className="cs-sidebar__description">Featured products in this category</p>
             </div>
 
             <div className="cs-sidebar__products">
@@ -119,13 +128,14 @@ function CategoryShowcase() {
               <div className="cs-sidebar__products-grid">
                 {getProductsByCategory(selectedCategory.id).length > 0 ? (
                   getProductsByCategory(selectedCategory.id).map((product) => (
-                    <motion.div
-                      key={product.id}
+                    <div
+                      key={product._id || product.id}
                       className="cs-sidebar__product-card"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      whileHover={{ y: -4 }}
+                      onClick={() => {
+                        const pid = product._id || product.id;
+                        navigate(`/products/${pid}`);
+                        setSelectedCategory(null);
+                      }}
                     >
                       <div className="cs-sidebar__product-img">
                         <img src={product.image} alt={product.name} loading="lazy" />
@@ -141,15 +151,19 @@ function CategoryShowcase() {
                           <span className="price">₹{product.price}</span>
                           <span className="original-price">₹{product.originalPrice}</span>
                         </div>
-                        <motion.button
+                        <button
                           className="cs-sidebar__product-btn"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const pid = product._id || product.id;
+                            navigate(`/products/${pid}`);
+                            setSelectedCategory(null);
+                          }}
                         >
                           View Details <ChevronRight size={16} />
-                        </motion.button>
+                        </button>
                       </div>
-                    </motion.div>
+                    </div>
                   ))
                 ) : (
                   <p className="cs-sidebar__empty">No products in this category</p>

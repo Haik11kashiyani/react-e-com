@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, ChevronRight } from 'lucide-react';
-import { allProducts } from '../data/products';
-import { fetchCarouselItems } from '../utils/api';
+import { fetchCarouselItems, fetchProducts } from '../utils/api';
 import './coresolMarq.css';
 
 function CoresolMarq() {
@@ -10,13 +10,18 @@ function CoresolMarq() {
   const [isClosing, setIsClosing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState([]);
+  const navigate = useNavigate();
+
+  // Click vs drag detection refs
+  const mouseDownRef = useRef(null);
 
   useEffect(() => {
+    // Load carousel items
     fetchCarouselItems()
       .then((res) => {
         let dbItems = res.data;
         if (!dbItems || dbItems.length === 0) {
-          // Fallback static items if DB is entirely empty
           dbItems = [
             { video: "/assets/videos/1.mp4", text: "Next-Gen Smartphones", category: 'phone' },
             { video: "/assets/videos/3.mp4", text: "Premium Audio", category: 'audio' },
@@ -24,17 +29,12 @@ function CoresolMarq() {
             { video: "/assets/videos/5.mp4", text: "Ultra-Thin Laptops", category: 'laptop' }
           ];
         }
-
-        // We want the wheel to be dense. Let's make sure we have at least 15-18 items total by repeating.
         const repeats = Math.max(2, Math.ceil(18 / dbItems.length));
         const finalItems = Array(repeats).fill(dbItems).flat();
-        
         setItems(finalItems);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error("Failed to load carousel items", err);
-        // Fallback static items if DB is offline/fails
+      .catch(() => {
         const fallbackItems = [
           { video: "/assets/videos/1.mp4", text: "Next-Gen Smartphones", category: 'phone' },
           { video: "/assets/videos/3.mp4", text: "Premium Audio", category: 'audio' },
@@ -45,6 +45,11 @@ function CoresolMarq() {
         setItems(Array(repeats).fill(fallbackItems).flat());
         setLoading(false);
       });
+
+    // Load products from API (with correct MongoDB _id for navigation)
+    fetchProducts()
+      .then((res) => setAllProducts(res.data.products || []))
+      .catch(() => setAllProducts([]));
   }, []);
 
   const handleClose = () => {
@@ -52,12 +57,32 @@ function CoresolMarq() {
     setTimeout(() => {
       setSelectedCategory(null);
       setIsClosing(false);
-    }, 400); // Wait for the close animation to finish
+    }, 400);
   };
 
   const getProductsByCategory = (categoryId) => {
     return allProducts.filter((p) => p.category === categoryId).slice(0, 6);
   };
+
+  // Click vs drag: record mousedown position & time
+  const handleMouseDown = useCallback((e) => {
+    mouseDownRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  }, []);
+
+  // Only open sidebar if it was a quick, non-drag click
+  const handleItemClick = useCallback((item) => {
+    if (!mouseDownRef.current) {
+      setSelectedCategory({ text: item.text, category: item.category });
+      return;
+    }
+    const { time } = mouseDownRef.current;
+    const elapsed = Date.now() - time;
+    // Only open if click was fast (< 300ms) — dragging takes longer
+    if (elapsed < 300) {
+      setSelectedCategory({ text: item.text, category: item.category });
+    }
+    mouseDownRef.current = null;
+  }, []);
 
   return (
     <>
@@ -68,7 +93,8 @@ function CoresolMarq() {
               <button
                 className="marquee-item marquee-item--clickable"
                 key={index}
-                onClick={() => setSelectedCategory({ text: item.text, category: item.category })}
+                onMouseDown={handleMouseDown}
+                onClick={() => handleItemClick(item)}
                 style={{
                   transform: `rotate(${(360 / items.length) * index}deg) translateY(var(--radius, -1400px))`
                 }}
@@ -117,9 +143,14 @@ function CoresolMarq() {
                 {getProductsByCategory(selectedCategory.category).length > 0 ? (
                   getProductsByCategory(selectedCategory.category).map((product, idx) => (
                     <div 
-                      key={product.id} 
+                      key={product._id || product.id} 
                       className={`marquee-sidebar__product-card sidebar-animate-item ${isClosing ? 'closing' : ''}`}
                       style={{ '--anim-delay': `${0.15 + (idx * 0.05)}s` }}
+                      onClick={() => {
+                        const pid = product._id || product.id;
+                        navigate(`/products/${pid}`);
+                        handleClose();
+                      }}
                     >
                       <div className="marquee-sidebar__product-img">
                         <img src={product.image} alt={product.name} loading="lazy" />
@@ -139,7 +170,15 @@ function CoresolMarq() {
                             <span className="original-price">₹{product.originalPrice}</span>
                           )}
                         </div>
-                        <button className="marquee-sidebar__product-btn">
+                        <button
+                          className="marquee-sidebar__product-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const pid = product._id || product.id;
+                            navigate(`/products/${pid}`);
+                            handleClose();
+                          }}
+                        >
                           View Details <ChevronRight size={16} />
                         </button>
                       </div>
