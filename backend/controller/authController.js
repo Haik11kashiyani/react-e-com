@@ -71,6 +71,7 @@ const userResponse = (user) => ({
   role: user.role,
   profilePic: user.profilePic,
   isEmailVerified: user.isEmailVerified,
+  addresses: user.addresses || [],
 });
 
 // POST /api/auth/register
@@ -241,6 +242,7 @@ export const getMe = async (req, res) => {
         role: req.user.role,
         profilePic: req.user.profilePic,
         isEmailVerified: req.user.isEmailVerified,
+        addresses: req.user.addresses || [],
       },
     });
   } catch (error) {
@@ -252,11 +254,42 @@ export const getMe = async (req, res) => {
 // PUT /api/auth/profile
 export const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, phone, gender } = req.body;
+    const { firstName, lastName, phone, gender, addresses, address, city, state, zip } = req.body;
+    let updateData = { firstName, lastName, phone, gender };
+    
+    // Direct addresses array update from Profile page
+    if (addresses !== undefined) {
+      updateData.addresses = addresses;
+    }
+    
+    // Appending address from Checkout page if flat fields are passed
+    if (address && city && state) {
+      const existingUser = await User.findById(req.user._id);
+      const isFirst = !existingUser.addresses || existingUser.addresses.length === 0;
+      
+      const newAddress = {
+        label: 'Home',
+        name: `${existingUser.firstName} ${existingUser.lastName}`.trim(),
+        line: address,
+        city,
+        state,
+        zip,
+        phone: phone || existingUser.phone,
+        isDefault: isFirst // make default if it's the first one
+      };
+      
+      const currentAddresses = existingUser.addresses || [];
+      // avoid duplicates by checking line & city
+      const exists = currentAddresses.some(a => a.line === address && a.city === city);
+      if (!exists) {
+        updateData.addresses = [...currentAddresses, newAddress];
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { firstName, lastName, phone, gender },
-      { new: true, runValidators: true }
+      updateData,
+      { new: true, runValidators: true, omitUndefined: true }
     );
 
     res.json({
@@ -271,6 +304,7 @@ export const updateProfile = async (req, res) => {
         role: user.role,
         profilePic: user.profilePic,
         isEmailVerified: user.isEmailVerified,
+        addresses: user.addresses || [],
       },
     });
   } catch (error) {

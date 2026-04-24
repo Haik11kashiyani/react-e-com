@@ -3,8 +3,7 @@ import Order from "../models/Order.js";
 import { validateCouponForUser } from "../utils/couponEngine.js";
 import process from "process";
 
-// Initialize Stripe with secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Stripe will be initialized lazily to avoid dotenv hoisting issues
 
 // POST /api/orders
 export const createOrder = async (req, res) => {
@@ -75,6 +74,8 @@ export const createPaymentIntent = async (req, res) => {
     // Amount must be in smallest currency unit (paisa for INR)
     const amountInPaisa = Math.round(amount * 100);
 
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
     // Create the PaymentIntent with Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInPaisa,
@@ -118,6 +119,8 @@ export const confirmPayment = async (req, res) => {
     if (!paymentIntentId) {
       return res.status(400).json({ success: false, message: "Payment intent ID is required" });
     }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     // Verify the payment with Stripe API — server-side verification
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);

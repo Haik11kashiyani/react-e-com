@@ -61,6 +61,18 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    addresses: [
+      {
+        label: { type: String, default: "Home" },
+        name: { type: String },
+        line: { type: String },
+        city: { type: String },
+        state: { type: String },
+        zip: { type: String },
+        phone: { type: String },
+        isDefault: { type: Boolean, default: false }
+      }
+    ],
 
     agreeTerms: {
       type: Boolean,
