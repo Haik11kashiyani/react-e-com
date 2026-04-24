@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CartContext from './CartContext';
 import { validateCoupon as validateCouponAPI, fetchCoupons } from '../utils/api';
+import useAuth from './useAuth';
 
 const FALLBACK_COUPONS = {
   'WELCOME10': { type: 'percent', value: 10, label: '10% Off — Welcome Offer' },
@@ -11,6 +13,8 @@ const FALLBACK_COUPONS = {
 };
 
 export default function CartProvider({ children }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [toast, setToast] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -70,6 +74,11 @@ export default function CartProvider({ children }) {
   }, []);
 
   const addToCart = useCallback((product, qty = 1) => {
+    if (!user) {
+      showToast('Please login to add items to your cart');
+      navigate('/login');
+      return;
+    }
     const pid = product._id || product.id;
     setItems((prev) => {
       const existing = prev.find((item) => (item._id || item.id) === pid);
@@ -81,7 +90,7 @@ export default function CartProvider({ children }) {
       return [...prev, { ...product, qty }];
     });
     showToast(`${product.name} added to cart`);
-  }, [showToast]);
+  }, [showToast, user, navigate]);
 
   const removeFromCart = useCallback((id) => {
     setItems((prev) => prev.filter((item) => (item._id || item.id) !== id));
@@ -97,6 +106,11 @@ export default function CartProvider({ children }) {
   const clearCart = useCallback(() => { setItems([]); setAppliedCoupon(null); }, []);
 
   const toggleWishlist = useCallback((productId) => {
+    if (!user) {
+      showToast('Please login to add items to your wishlist');
+      navigate('/login');
+      return;
+    }
     setWishlist((prev) => {
       if (prev.includes(productId)) {
         showToast('Removed from wishlist');
@@ -105,7 +119,7 @@ export default function CartProvider({ children }) {
       showToast('Added to wishlist');
       return [...prev, productId];
     });
-  }, [showToast]);
+  }, [showToast, user, navigate]);
 
   const isInWishlist = useCallback((productId) => wishlist.includes(productId), [wishlist]);
 

@@ -35,9 +35,7 @@ export default function Profile() {
   const [tab, setTab] = useState('coupons');
   const [copied, setCopied] = useState('');
   const [language, setLanguage] = useState('en');
-  const [addresses, setAddresses] = useState([
-    { id: 1, label: 'Home', name: 'John Doe', line: '123 Main St, Apt 4', city: 'San Francisco', state: 'CA', zip: '94105', phone: '+1 555-000-1234', isDefault: true },
-  ]);
+  const [addresses, setAddresses] = useState(user?.addresses || []);
   const [editingAddr, setEditingAddr] = useState(null);
   const [addrForm, setAddrForm] = useState({ label: '', name: '', line: '', city: '', state: '', zip: '', phone: '' });
   const [showAddrForm, setShowAddrForm] = useState(false);
@@ -51,6 +49,9 @@ export default function Profile() {
     if (user) {
       setProfileName(`${user.firstName || ''} ${user.lastName || ''}`.trim());
       setProfileEmail(user.email || '');
+      if (user.addresses) {
+        setAddresses(user.addresses);
+      }
     }
   }, [user]);
 
@@ -80,12 +81,20 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     const parts = profileName.trim().split(/\s+/);
     const firstName = parts[0] || '';
-    const lastName = parts.slice(1).join(' ') || '';
+    const lastName = parts.slice(1).join(' ');
+    
+    if (!firstName || !lastName) {
+      alert("Please provide both a first name and a last name (e.g., 'John Doe').");
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await updateProfile({ firstName, lastName, email: profileEmail });
-      setUser(res.data.user);
-      localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+      if (res.data?.user) {
+        setUser(res.data.user);
+        localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+      }
     } catch { /* silent */ }
     setSaving(false);
   };
@@ -96,29 +105,55 @@ export default function Profile() {
     setTimeout(() => setCopied(''), 2000);
   };
 
-  const saveAddress = () => {
+  const saveAddress = async () => {
     if (!addrForm.name || !addrForm.line || !addrForm.city) return;
+    let newAddresses;
     if (editingAddr) {
-      setAddresses((prev) => prev.map((a) => a.id === editingAddr ? { ...a, ...addrForm } : a));
+      newAddresses = addresses.map((a) => (a._id || a.id) === editingAddr ? { ...a, ...addrForm } : a);
       setEditingAddr(null);
     } else {
-      setAddresses((prev) => [...prev, { ...addrForm, id: Date.now(), isDefault: prev.length === 0 }]);
+      newAddresses = [...addresses, { ...addrForm, id: Date.now().toString(), isDefault: addresses.length === 0 }];
     }
+    setAddresses(newAddresses);
     setAddrForm({ label: '', name: '', line: '', city: '', state: '', zip: '', phone: '' });
     setShowAddrForm(false);
+    
+    try {
+      const res = await updateProfile({ addresses: newAddresses });
+      if (res.data?.user) {
+        setUser(res.data.user);
+        localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+      }
+    } catch { /* silent */ }
   };
 
-  const deleteAddress = (id) => {
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
+  const deleteAddress = async (id) => {
+    const newAddresses = addresses.filter((a) => (a._id || a.id) !== id);
+    setAddresses(newAddresses);
+    try {
+      const res = await updateProfile({ addresses: newAddresses });
+      if (res.data?.user) {
+        setUser(res.data.user);
+        localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+      }
+    } catch { /* silent */ }
   };
 
-  const setDefault = (id) => {
-    setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
+  const setDefault = async (id) => {
+    const newAddresses = addresses.map((a) => ({ ...a, isDefault: (a._id || a.id) === id }));
+    setAddresses(newAddresses);
+    try {
+      const res = await updateProfile({ addresses: newAddresses });
+      if (res.data?.user) {
+        setUser(res.data.user);
+        localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+      }
+    } catch { /* silent */ }
   };
 
   const editAddress = (addr) => {
     setAddrForm({ label: addr.label, name: addr.name, line: addr.line, city: addr.city, state: addr.state, zip: addr.zip, phone: addr.phone });
-    setEditingAddr(addr.id);
+    setEditingAddr(addr._id || addr.id);
     setShowAddrForm(true);
   };
 
@@ -296,7 +331,7 @@ export default function Profile() {
 
                   <div className="addr-list">
                     {addresses.map((addr) => (
-                      <div key={addr.id} className={`addr-card ${addr.isDefault ? 'default' : ''}`}>
+                      <div key={addr._id || addr.id} className={`addr-card ${addr.isDefault ? 'default' : ''}`}>
                         <div className="addr-card__header">
                           <span className="addr-card__label">{addr.label || 'Address'}</span>
                           {addr.isDefault && <span className="addr-card__default-badge">Default</span>}
@@ -306,9 +341,9 @@ export default function Profile() {
                         <p className="addr-card__line">{addr.city}, {addr.state} {addr.zip}</p>
                         {addr.phone && <p className="addr-card__phone">{addr.phone}</p>}
                         <div className="addr-card__actions">
-                          {!addr.isDefault && <button onClick={() => setDefault(addr.id)}>Set Default</button>}
+                          {!addr.isDefault && <button onClick={() => setDefault(addr._id || addr.id)}>Set Default</button>}
                           <button onClick={() => editAddress(addr)}><Edit2 size={12} /> Edit</button>
-                          <button className="addr-card__delete" onClick={() => deleteAddress(addr.id)}><Trash2 size={12} /> Remove</button>
+                          <button className="addr-card__delete" onClick={() => deleteAddress(addr._id || addr.id)}><Trash2 size={12} /> Remove</button>
                         </div>
                       </div>
                     ))}

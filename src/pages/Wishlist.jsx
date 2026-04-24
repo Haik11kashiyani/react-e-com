@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'; // eslint-disable-line -- used as motion
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2, Star, ArrowLeft } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import useAuth from '../hooks/useAuth';
 import { fetchProducts } from '../utils/api';
 import { SplitText, FadeIn, StaggerContainer } from '../components/common/AnimatedComponents';
 import { staggerItem } from '../components/common/animationVariants';
@@ -11,6 +12,7 @@ import './Wishlist.css';
 
 export default function Wishlist() {
   const { addToCart, wishlist, toggleWishlist } = useCart();
+  const { user } = useAuth();
   const [allProducts, setAllProducts] = React.useState([]);
 
   React.useEffect(() => {
@@ -30,6 +32,15 @@ export default function Wishlist() {
   };
 
   const removeItem = (id) => toggleWishlist(id);
+
+  if (!user) {
+    return (
+      <div className="wishlist-page" style={{ paddingTop: '200px', textAlign: 'center' }}>
+        <h2>Please log in to view your wishlist</h2>
+        <Link to="/login" className="pill-btn pill-btn-primary" style={{ marginTop: '1rem' }}>Login</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="wishlist-page">

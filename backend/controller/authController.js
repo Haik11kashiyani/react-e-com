@@ -255,7 +255,15 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone, gender, addresses, address, city, state, zip } = req.body;
-    let updateData = { firstName, lastName, phone, gender };
+    let updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (gender !== undefined) updateData.gender = gender;
+    
+    // Clean phone number to match schema digits-only constraint
+    if (phone !== undefined) {
+      updateData.phone = String(phone).replace(/\D/g, '');
+    }
     
     // Direct addresses array update from Profile page
     if (addresses !== undefined) {
@@ -274,7 +282,7 @@ export const updateProfile = async (req, res) => {
         city,
         state,
         zip,
-        phone: phone || existingUser.phone,
+        phone: updateData.phone || existingUser.phone,
         isDefault: isFirst // make default if it's the first one
       };
       
@@ -288,8 +296,8 @@ export const updateProfile = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      updateData,
-      { new: true, runValidators: true, omitUndefined: true }
+      { $set: updateData },
+      { new: true, runValidators: true }
     );
 
     res.json({

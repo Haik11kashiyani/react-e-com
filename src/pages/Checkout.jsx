@@ -33,7 +33,7 @@ function CheckoutForm({ stripeReady }) {
   const stripe = useStripe();
   const elements = useElements();
   const { cart, totalPrice, clearCart, appliedCoupon, discount } = useCart();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -212,7 +212,13 @@ function CheckoutForm({ stripeReady }) {
           if (result) {
             setOrderNumber(result);
             if (saveAddress && user) {
-              try { await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone }); } catch { /* silent */ }
+              try { 
+                const res = await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone });
+                if (res.data?.user) {
+                  setUser(res.data.user);
+                  localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+                }
+              } catch { /* silent */ }
             }
             setErrors({}); setTouched({}); setStep(2); clearCart();
           }
@@ -231,7 +237,13 @@ function CheckoutForm({ stripeReady }) {
           const res = await createOrder(orderData);
           setOrderNumber(res.data.order?._id?.slice(-8).toUpperCase() || String(Math.floor(Math.random() * 90000) + 10000));
           if (saveAddress && user) {
-            try { await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone }); } catch { /* silent */ }
+            try { 
+              const res = await updateProfile({ address: shipping.address, city: shipping.city, state: shipping.state, zip: shipping.zip, phone: shipping.phone });
+              if (res.data?.user) {
+                setUser(res.data.user);
+                localStorage.setItem('techorbit_user', JSON.stringify(res.data.user));
+              }
+            } catch { /* silent */ }
           }
           setErrors({}); setTouched({}); setStep(2); clearCart();
         }
@@ -243,6 +255,15 @@ function CheckoutForm({ stripeReady }) {
       setOrderLoading(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="checkout-page" style={{ paddingTop: '200px', textAlign: 'center' }}>
+        <h2>Please log in to checkout</h2>
+        <Link to="/login" className="pill-btn pill-btn-primary" style={{ marginTop: '1rem' }}>Login</Link>
+      </div>
+    );
+  }
 
   if (cart.length === 0 && step !== 2) {
     return (
